@@ -143,6 +143,7 @@ def shapelet_decomposition(image_data,\
     test_basis              : Boolean controling the return of the function:
                                 -- True - return the dictionary, reconstruction, coefficients, label_array
                                 -- False - return reconstruction, coefficients, label_array
+    flag_gaussian_fit       : Boolean controling the execution of _get_gaussian_noise_params in plotting_routines script
     n_max                   : Ingeter nubmer indicating the number of shapelets to be used in
                                 the dictionary
     column_number           : Integer number used for making distinction for images noised by 
