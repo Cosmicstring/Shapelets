@@ -50,6 +50,17 @@ def calculate_spark(D):
     pass
 
 def show_some_shapelets(M=5,N=5, theta = 0., sigma=1., q=1., basis = 'Polar_Elliptical'):
+    """
+    Do a visualization of the 2D shapelet basis with specified parameters.
+
+    Input parameters:
+    -----------------
+    M,N         : Integers representing maximum shapelet orders. For polar basis, only N is taken into
+                    account
+    theta       : Float number which determines the rotation of the shapelets
+    sigma, q    : Float numbers representing beta scale and ellipticity respectively
+    basis       : String representing the basis in which to visualize the shapelets.
+    """
     
     X0 = np.linspace(-8,8,17)
     Y0 = np.linspace(-8,8,17)
@@ -330,10 +341,10 @@ def shapelet_decomposition(image_data,\
                     beta_array = beta_array)
 
     reconst, coeffs = select_solver_do_fitting_plot(\
-            f_path, basis, coeff_0, noise_scale, \
+            f_path, basis, \
             N1,N2,n_max,column_number,\
             image,D,signal,solver, beta_array,\
-            Num_of_shapelets = Num_of_shapelets, alpha_ = alpha_, \
+            noise_scale = noise_scale, coeff_0 = coeff_0, Num_of_shapelets = Num_of_shapelets, alpha_ = alpha_, \
             flag_gaussian_fit = flag_gaussian_fit, plot = plot_sol)
 
     ## Check the shape data for the reconstructed image

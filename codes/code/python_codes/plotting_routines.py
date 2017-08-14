@@ -6,6 +6,12 @@ import numpy as np
 from utils.I_O_utils import *
 from utils.shapelet_utils import *
 
+"""
+----------------------
+massey_refregier_2005 == Massey R., Refregier A., MNRAS 2005
+----------------------
+"""
+
 ## Set up global LaTeX parsing
 plt.rc('text', usetex=True)
 plt.rc('font', **{'family' : "sans-serif"})
@@ -23,6 +29,27 @@ def coeff_plot2d(coeffs,N1,N2,\
     import matplotlib.cm as cm
     from matplotlib.colors import LogNorm
     from mpl_toolkits.axes_grid1 import make_axes_locatable
+
+    """
+    Used for plotting the Cartesian basis coefficients. More convinient to plot them
+    in matrix form than Polar basis. Figure and Axes objects are passed from another plotting
+    routine and returned changed.
+
+    Input parameters:
+    -----------------
+    
+    coeffs          :   ndarray of dimension N1xN2 of float coefficient values; if not of N1xN2 shape
+                        then coeffs are reshaped to N1xN2 shape
+    N1,N2           :   Integers defining the shape of coeffs
+    ax,fig          :   Axes and Figure object passed by other plotting routine
+    orientation     :   String defining the label orientation on the Axes
+    f_coef_output   ;   String contatinig the path for .txt files // Optional, used only for debug
+    
+
+    Returns:
+    --------
+    ax,fig          :   Axes and Figure objects, with the coefficient plot
+    """
 
     ## Double check write out to file
     ## coeffs
@@ -63,7 +90,12 @@ def coeff_plot_polar(coeffs, N1,N2, \
         orientation = 'vertical',\
         f_coef_output = ''):
     """
-    Plot the values of coeffs in the triangular grid
+    Plot the values of coeffs to the fig and ax objects obtained in the triangular grid as in massey_refregier_2005.
+    Return fig and ax changed by this function.
+
+    Return:
+    -------
+    ax, fig     :   Axes and Figure objects with plotted coefficients
     """
     import matplotlib as mpl
     import matplotlib.cm as cm
@@ -152,21 +184,21 @@ def _get_gaussian_noise_params(arr,f_path, bins_num = None):
     Parameters:
     -----------
 
-    arr : Array of input values for which histogram is going to be calculated
-    f_path : Path variable controling the path where the resulting plot is going 
+    arr     : 1D array of input values for which histogram is going to be calculated
+    f_path  : String path variable controling the path where the resulting plot is going 
              to be saved
 
     Optional:
     ---------
 
-    bins_num : Number N+1 of bins to be provided in the histogram
-    initial_guess : Initial guess for the curve_fit function
+    bins_num        : Integer number N+1 of bins to be provided in the histogram
+    initial_guess   : 1D array of initial guesses for the curve_fit function
 
 
     Returns:
     --------
 
-     : 2 - length array with obtained sigma and mu values from the fit
+    p_fit : 2 - length array with obtained sigma and mu values from the fit
     p_err : 2-length array containing std of sigma and mu
     """
 
@@ -230,21 +262,21 @@ def plot_decomposition(basis, image, size_X, size_Y, \
         residual_energy_fraction_array,recovered_energy_fraction_array, Path,\
         beta_array = []):
 
-    """ Plot the decomposition obtained with the chosen __solver__
+    """ Plot the decomposition obtained with the chosen solver and save the result to Path
 
     Parameters:
     -----------
-    basis                       : variable which controls the selected __basis__ in which decomposition was made
-    image                       : image that was provided for decomposition
-    size_X, size_Y              : image X and Y sizes
-    base_coefs                  : base coefficients obtained from the decomposition
-    N1,N2                       : number of coefficients used for n and m numbers respectively
-    shapelet_reconst            :   reconstruction of the image with the obtained base_coefs
-    signal                      : an image vector, obtained from flattening the original image matrix
-    residual                    : residual obtained with difference between signal and shapelet_reconst
-    residual_energy_fraction    : energy fraction of the residual image
-    recovered_energy_fraction   : energy fraction of the obtained image with shapelet_reconst
-    beta_array                  : Array with betas used // Added for the compound basis
+    basis                       : String variable which controls the selected __basis__ in which decomposition was made
+    image                       : Ndarray representing image that was provided for decomposition
+    size_X, size_Y              : Integer numbers defining image X and Y sizes
+    base_coefs                  : 1D array of float base coefficients obtained from the decomposition
+    N1,N2                       : Integer numbers representingi max N and M qunatum numbers respectively
+    shapelet_reconst            : 1D array of reconstruction of the image with the obtained base_coefs
+    signal                      : 1D array of an image vector, obtained from flattening the original image matrix
+    residual                    : 1D array of residual obtained with difference between signal and shapelet_reconst
+    residual_energy_fraction    : 1D array energy fraction of the residual image
+    recovered_energy_fraction   : 1D array energy fraction of the obtained image with shapelet_reconst
+    beta_array                  : 1D array with betas used // Added for the compound basis
 
     """ 
     from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -335,22 +367,22 @@ def plot_solution(basis, N1,N2,image_initial,size_X, size_Y,\
     
     Parameters:
     -----------
-    basis : variable which controls the basis for decomposition
-    N1,N2 : max order of shapelet included in the given subspace of Ns(<N1) and Ms(<N2)
-    image_initial : initial image provided for decomposition
-    size_X,size_Y : X and Y size of the image_initial
-    reconst : reconstruction of the image obtained
-    coeffs_initial : coeffs obtained in the reconstruction process
-    residual : residual obtained with difference between signal and shapelet
-    residual_energy_fraction : energy fraction of the residual image
-    recovered_energy_fraction : energy fraction of the obtained image with shapelet_reconst
-    n_nonzero_coefs : nonzero coefficients in the coefs variable
-    fig : figure object forwarded from plot_decomposition
-    Path : to control the __savefig__ path
+    basis                       : String variable which controls the basis for decomposition
+    N1,N2                       : Integer numbers of max N and M quantum numbers
+    image_initial               : 2Darray of initial image provided for decomposition
+    size_X,size_Y               : Float numbers of X and Y size of the image_initial
+    reconst                     : 1D array of floats, representing reconstruction of the image obtained
+    coeffs_initial              : 1D array of coeffs obtained in the reconstruction process
+    residual                    : 1D array of residual obtained with difference between signal and shapelet
+    residual_energy_fraction    : 1D array og energy fraction of the residual image
+    recovered_energy_fraction   : 1D array of energy fraction of the obtained image with shapelet_reconst
+    n_nonzero_coefs             : Integer defining nonzero coefficients in the coefs variable
+    fig                         : Figure object forwarded from plot_decomposition
+    Path                        : String representing the path where the final plot is saved
     
     Optional:
     ---------
-    beta_array : array of beta values used for basis matrix  
+    beta_array : 1D array of beta values used for basis matrix  
 
     """
     from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -511,7 +543,8 @@ def plot_stability(coeff_stability, coeff_0, N1, N2, noise_img_num, \
         mid_word = '',flag_plot=1):
     
     """
-    Plot the stability matrices and std_rel matrices for selected solver method
+    This plotting is used only for stability tests. It plots std matrix, relative std matrix, difference of coefficients and relative change of
+    the coefficient value. All the plots are saved to the path_to_save + additional_path_string file path.
     """
     
     from matplotlib.ticker import FormatStrFormatter

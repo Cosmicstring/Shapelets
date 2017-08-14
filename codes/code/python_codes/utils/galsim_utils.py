@@ -5,7 +5,7 @@ def get_moments(shape):
     """
     Extract the moments from the galsim image ShapeData
 
-    @param shape - ShapeData provided from the galsim image
+    shape   :   galsim.hsm.ShapeData provided from the galsim image
     """
     x0,y0 = shape.moments_centroid.x, shape.moments_centroid.y ## possible swap b/w x,y
     sigma = shape.moments_sigma
@@ -24,10 +24,16 @@ def get_gaussian_weight_image(img_array):
     Given an arbitrary galaxy image, obtain the image of the best-fit elliptical Gaussian.
     This is aimed to obtain the weight for the pixels in the galaxy postage stamp.
 
-    @params img_array       Input image, either as a numpy array or as a galsim.Image instance
+    Input params:
+    -------------
+    img_array       :   Input image, either as a numpy array or as a galsim.Image instance
 
-    @returns                Image of the best-fit elliptical Gaussian, 
-                            in the same format as the input.
+    
+    Returns:
+    --------
+    weight image    :   ndarray image of the best-fit elliptical Gaussian, in the same 
+                        format as the input.
+    flag            :   Integer returned if the FindAdaptiveMom() fails
     """
     
     flag = 1

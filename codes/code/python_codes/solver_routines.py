@@ -28,15 +28,15 @@ def asses_diff(new_coefs, old_coefs):
             diff_arr[i] = 0
     return diff_arr
 
-def sparse_solver(D, signal, N1,N2, Num_of_shapelets = None):
+def solver_omp(D, signal, N1,N2, Num_of_shapelets = None):
 
     """ Find appropriate weights for the basis coefficients 
     obtained by the inner product routine in __shapelet_decomposition__
     using the Orthogonal Matching Pursuit algorithm
 
-    @param D basis coefficient matrix; columns contain basis vectors
-    @param signal original image to be decomposed into shapelet basis
-    @param N1,N2 number of n and m quantum numbers respectively
+    D       : ndarray containing the dictionary of shapelet basis
+    signal  : ndarray original image to be decomposed into shapelet basis
+    N!,N2   : Integer numbers of n and m quantum numbers respectively
     
     """
     n_nonzero_coefs = Num_of_shapelets
@@ -81,8 +81,8 @@ def solver_SVD(D, signal, take_nonzero = 21, epsilon = 0.01, decomp_method = 'Du
     """ Find appropriate coefficients for basis vectors contained in D, reconstruct image,
     calculate residual and residual and energy fraction using the Singular Value Decomposition
     
-    @param D basis coefficient matrix
-    @param signal original image
+    D       : ndarray of dictionary for shapelet basis
+    signal  : ndarray representing the original image
 
     """
 
@@ -187,8 +187,8 @@ def solver_lstsq(D, signal):
     """Find appropriate coefficients for the basis matrix D, reconstruct the image, calculate
     residual and energy and residual fraction using the Orthogonal Matching Pursuit algorithm
     
-    @param D basis coefficient matrix
-    @param signal original image
+    D       : ndarray, dictionary of shapelet basis
+    signal  : ndarray of the original image
     """
     
     coeffs_lstsq = linalg.lstsq(D, signal)[0]  
@@ -207,8 +207,8 @@ def solver_lasso_reg(D, n_nonzero, signal, alpha = None):
     reconstruct the image, calculate residual and energy and residual fraction with 
     the Lasso regularization technique minimizing the L_1 norm
     
-    @param D basis coefficient matrix
-    @param signal original image
+    D       : ndarray dictionary of shapelet basis
+    signal  : ndarray of the original image for decomposition
 
     """
     if (alpha == None):
@@ -237,13 +237,44 @@ def solver_lasso_reg(D, n_nonzero, signal, alpha = None):
 
 def select_solver_do_fitting_plot(\
         f_path, \
-        basis, coeff_0, noise_scale, \
+        basis, \
         N1, N2, n_max, column_number, \
         image_initial, D, signal,solver, \
         beta_array,\
-        Num_of_shapelets = 10, alpha_ = 0.0001, \
+        noise_scale=0., coeff_0 = [], Num_of_shapelets = 10, alpha_ = 0.0001, \
         flag_gaussian_fit = True, plot = True):
+
+    """
+    As the name says, here the solver is selected, for weightning certain shapelets in the dictionary,
+    by appropriate optimizing function. After the coefficients are obtained call the the plot_solution routine. 
+    Currently enabled solvers are:
+        -- Lasso regularization (solver_lasso)
+        -- Orthogonal Matching Pursuit (solver_omp)
+        -- Singular value decomposition (solver_SVD)
+        -- Least squares (solver_lstsq)
+
+    Input parameters:
+    -----------------
     
+    f_path          :   String representing the path to which all the plots in the plot_solution routine and intermediate outputs are saved
+    basis           :   String representing the basis in which decomposition is done.
+    N1,N2           :   Integer numbers representing N and M quantum numbers
+    n_max           :   Integer defining the number of shapelets in one-beta-scale dictionary 
+    image_initial   :   ndarray of the initial image which is decomposed into shapelet basis
+    D               :   ndarray of the dictionary for shapelet basis
+    signal          :   1D array, which is image_initial.flatten()
+    solver          :   String selecting the solver for decomposition
+    beta_array      :   1D array of beta scale values // Usually [sigma/4., sigma/2., sigma, sigma*2 sigma*4]
+
+    Used only for stability tests:
+    --------------------------------
+
+    column_number   :   Integer representing the idx of the random gausian noise matrix
+    noise_scale     :   Float number which defines the variance of the noise matrix added to initial image
+    coeff_0         :   ndarray of the coefficients obtained for 0 noise_scale
+
+    """
+
     ## Default for foler path
     folder_path_word = ""
     mid_path_word = ""
@@ -255,7 +286,7 @@ def select_solver_do_fitting_plot(\
     else:
         mid_name_word = '_solution_'\
             +str(N1)+'_'+str(N2)\
-            +'_'+str(n_max)+'_'+basis+'_'+ str(column_number) + '_'
+            +'_'+str(n_max)+'_'+basis+ '_'
 
     ## Sparse solver
     if (solver == 'omp'):
@@ -266,7 +297,7 @@ def select_solver_do_fitting_plot(\
 
         coeffs, reconst, residual, \
             residual_energy_fraction, recovered_energy_fraction, \
-            n_nonzero_coefs = sparse_solver(D, signal, N1,N2,Num_of_shapelets)
+            n_nonzero_coefs = solver_omp(D, signal, N1,N2,Num_of_shapelets)
          
         mid_path_word = str(n_nonzero_coefs) + '_' + basis
         end_word = str(n_nonzero_coefs)
@@ -302,7 +333,7 @@ def select_solver_do_fitting_plot(\
     end_word = str(n_nonzero_coefs)
     folder_path_word = f_path + solver + '/' + mid_path_word + '/'
  
-    if (noise_scale == 0) or (noise_scale==None) or (noise_scale == -1.):
+    if noise_scale==None:
         coefs_plot = coeffs
     else:
         coefs_plot = asses_diff(coeffs,coeff_0)

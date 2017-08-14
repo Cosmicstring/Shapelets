@@ -3,6 +3,16 @@ import math
 from scipy import special
 from scipy.special import hermitenorm
 
+"""
+------------------
+berry == Berry et al. MNRAS 2004
+bosch == Bosch J. AJ 2010 vol 140 pp 870 - 879
+nakajima == Nakajima R., Bernstein G., APJ 2007, vol 133, pp 1763-1779
+refregier == Refregier MNRAS 2003 / Shapelets I and II
+------------------
+"""
+
+
 factorial = math.factorial
 Pi = np.pi
 
@@ -66,9 +76,9 @@ def shapelet1d(n,x0=0,s=1):
 
     """Make a 1D shapelet template to be used in the construction of 2D shapelets
 
-    n : Energy quantum number
-    x0 : centroid
-    s : same as beta parameter in refregier
+    n 	: Integer representing energy quantum number
+    x0 	: Integer defining the centroid
+    s 	: Float which is the same as beta parameter in refregier
 
     """
     def sqfac(k):
@@ -85,12 +95,9 @@ def shapelet2d(m,n,x0=0,y0=0,sx=1,sy=1):
     
     """Make a 2D shapelet template function to be used in image decomposition later on
     
-    n : Energy quatum number
-    m : Magnetic quantum number
-    x0 : image centroid - X coordinate
-    y0 : image centroid - Y coordinate
-    sx : beta scale for the X shapelet space
-    xy : beta scale for the Y shapelet space 
+    n,m  	: Integers representing energy_x and energy_y quantum numbers, respectively
+    x0,y0 	: Integers defining image centroid - X and Y coordinate, resepectively
+    sx,sy 	: Floats setting the beta scale for the X and Y shapelet space, respectively
     
     """
 
@@ -103,13 +110,10 @@ def elliptical_shapelet(m,n,x0=0,y0=0,sx=1,sy=1,theta=0):
     
     """ Make elliptical shapelets to be used in the decomposition of images later on
 
-    n : Energy quantum numberr
-    m : Magnetic quantum number
-    x0 : image centroid - X coordinate
-    y0 : image centroid - Y coordinate
-    sx : beta scale for X shapelet space (?)
-    sy : beta scale for Y shapelet space (?)
-    theta : true anomaly
+    n,m  	: Integers representing energy_x and energy_y quantum numbers, respectively
+    x0,y0 	: Integers defining image centroid - X and Y coordinate, resepectively
+    sx,sy 	: Floats setting the beta scale for the X and Y shapelet space, respectively
+    theta 	: Float for setting up the ellipse orientation
     
     """
     u = lambda x,y: (x-x0)*np.cos(theta)/sx + (y-y0)*np.sin(theta)/sy
@@ -119,7 +123,8 @@ def elliptical_shapelet(m,n,x0=0,y0=0,sx=1,sy=1,theta=0):
 
 def coeff(N, M, beta):
     """ 
-    Return normalization coefficients for refregier shapelets
+    Return nomalizing coefficients in front of the
+	shapelet functions - refering to refregier paper 
 
     """
     A = ( (-1)**((N - np.abs(M))/2) /
@@ -176,7 +181,7 @@ def polar_shapelets_refregier(N, M, beta, theta = 0.):
 
 def decompose_cartesian(basis,\
         D, base_coefs, \
-        shapelet_reconst, signal, flag_test, \
+        shapelet_reconst, signal, make_labels, \
         label_arr,\
         n_max,N1,N2,\
         x0,y0,sigma,\
@@ -184,7 +189,30 @@ def decompose_cartesian(basis,\
         q=1., theta = 0.):
     """
     Decompose into XY or XY_Elliptical basis, return obtained reconstruction with shapelets
-    and also construct label_array and basis matrix D, return the inner product reconst.
+    and also construct label_array and basis matrix/dictionary D, return the inner product reconst.
+	
+	Input parameters:
+	-----------------
+	
+	basis				:	String representing the basis of dictionary
+	D					:	Matrix of dim(N1xN2xlen(beta_array)), representing the dictionary. Initialized to all zeros at the beginning
+	base_coefs			:	1D array of floats for storing inner product coefficients. Initialized to zero at the beginning
+	shapelet_reconst	:	1D array of floats for storing the obtained inner product reconstruciton of the image
+	signal				:	1D array of pixel values of the initial image, which is to be reconstructed
+	make_labels			:	Boolean variable controling the manipulation with label_arr
+	label_arr			:	1D array of char for storing the shapelet labels which go into D. Initialized to empty strings.
+	n_max, N1, N2		:	Integers defining the maximum number of shapelets in the given beta scale (sigma), 
+							upper limit on energy_x and energy_y quantum numbers respectively
+	x0,y0				:	Integers defining the centroid of the image
+	sigma				:	Float which represents the beta scale of the shapelets. Obtained from the FindAdaptiveMom()
+	X,Y					:	1D arrays which are used to make the meshgrid for sampling the 2D shapelets
+	q,theta				:	Floats defining ellipticity and orientation of shapelets
+	
+	Returns:
+	--------
+	
+	shapelet_reconst 	:	1D array of inner product image reconstruction
+	
     """
     
     a = sigma / np.sqrt(q)
@@ -198,7 +226,7 @@ def decompose_cartesian(basis,\
     for k in xrange(N1*N2):
         m,n = k/N1, k%N1
         if (m+n <= max_order): 
-            if flag_test:
+            if make_labels:
                 ## To be consistent with indexation of the basis matrix
                 ## D
                 label_arr[k] = (str("(%d, %d)" % (n,m)))
@@ -219,7 +247,7 @@ def decompose_cartesian(basis,\
 
 def decompose_polar(basis,\
        D,base_coefs,\
-       shapelet_reconst, signal, flag_test, \
+       shapelet_reconst, signal, make_labels, \
        label_arr,\
        n_max, N1,N2,\
        x0,y0,sigma,\
@@ -228,9 +256,34 @@ def decompose_polar(basis,\
        q=1., theta = 0.):
 
     """
-    Decompose into polar shapelet basis, return shapelet reconstruction
+    Decompose into Polar or Polar_Elliptical shapelet basis, return shapelet reconstruction
     and constract basis matrix as well as label_array, return the inner product
     reconstruciton
+	
+	Input parameters:
+	-----------------
+	
+	basis				:	String representing the basis of dictionary
+	D					:	Matrix of dim(N1xN2xlen(beta_array)), representing the dictionary. Initialized to all zeros at the beginning
+	base_coefs			:	1D array of floats for storing inner product coefficients. Initialized to zero at the beginning
+	shapelet_reconst	:	1D array of floats for storing the obtained inner product reconstruciton of the image
+	signal				:	1D array of pixel values of the initial image, which is to be reconstructed
+	make_labels			:	Boolean variable controling the manipulation with label_arr
+	label_arr			:	1D array of char for storing the shapelet labels which go into D. Initialized to empty strings.
+	n_max, N1, N2		:	Integers defining the maximum number of shapelets in the given beta scale (sigma), 
+							upper limit on energy_x and energy_y quantum numbers respectively
+	x0,y0				:	Integers defining the centroid of the image
+	sigma				:	Float which represents the beta scale of the shapelets. Obtained from the FindAdaptiveMom()
+	X,Y					:	1D arrays which are used to make the meshgrid for sampling the 2D shapelets
+	polar_basis			: 	String which chooses the type of polar basis to use 
+							// This was used to check the difference between the nakajima paper and refregier paper equations
+							// it seems that the refregier shapelets are normalized properly
+	q,theta				:	Floats defining ellipticity and orientation of shapelets
+	
+	Returns:
+	--------
+	
+	shapelet_reconst 	:	1D array of inner product image reconstruction
     """
     
     Xv, Yv = np.meshgrid((X-x0),(Y-y0))     
@@ -261,7 +314,7 @@ def decompose_polar(basis,\
             ## n_max - defined as:
             ## theta_max (galaxy size) / theta_min (smallest variation size) - 1  
 
-            if flag_test:
+            if make_labels:
                 ## To be consistent with the indexation of the basis matrix
                 ## D
                 label_arr[k_p] = (str("(%d, %d)" % (n,m))) 
@@ -287,7 +340,7 @@ def decompose_polar(basis,\
 
 def decompose_compound(basis,\
        D,base_coefs,beta_array, \
-       shapelet_reconst, signal, flag_test, \
+       shapelet_reconst, signal, make_labels, \
        label_arr,\
        n_max, N1,N2,\
        x0,y0,\
@@ -296,8 +349,35 @@ def decompose_compound(basis,\
        q=1., theta = 0.):
     
     """
-    Decompose into the compound basis (@cite bosch) with provided basis matrix and signal
+    Decompose into the compound basis / Polar_Elliptical or XY_Elliptical / (@cite bosch) with provided basis matrix and signal
     return the obtained inner product reconstruction
+	
+	Input parameters:
+	-----------------
+	
+	basis				:	String representing the basis of dictionary
+	D					:	Matrix of dim(N1xN2xlen(beta_array)), representing the dictionary. Initialized to all zeros at the beginning
+	base_coefs			:	2D array of floats dim(len(beta_array) x (N1*N2))for storing inner product coefficients. Initialized to zero at the beginning
+	beta_array			:	1D array of floats which contains chosen beta scales for the compound basis
+	shapelet_reconst	:	2D array of floats dim(len(beta_array) x (signal.shape[0]*signal.shape[1])) \
+							for storing the obtained inner product reconstruciton of the image
+	signal				:	1D array of pixel values of the initial image, which is to be reconstructed
+	make_labels			:	Boolean variable controling the manipulation with label_arr
+	label_arr			:	1D array of char for storing the shapelet labels which go into D. Initialized to empty strings.
+	n_max, N1, N2		:	Integers defining the maximum number of shapelets in the given beta scale (sigma), \
+							upper limit on energy_x and energy_y quantum numbers respectively
+	x0,y0				:	Integers defining the centroid of the image
+	sigma				:	Float which represents the beta scale of the shapelets. Obtained from the FindAdaptiveMom()
+	X,Y					:	1D arrays which are used to make the meshgrid for sampling the 2D shapelets
+	polar_basis			: 	String which chooses the type of polar basis to use \
+							// This was used to check the difference between the nakajima paper and refregier paper equations
+							// it seems that the refregier shapelets are normalized properly
+	q,theta				:	Floats defining ellipticity and orientation of shapelets
+	
+	Returns:
+	--------
+	
+	shapelet_reconst 	:	2D array of dime(len(beta_array) x (signal.shape[0]*signal.shape[1])) inner product image reconstruction
     """
 
 
@@ -339,7 +419,7 @@ def decompose_compound(basis,\
                 ## beta should change when one whole basis is sweeped by k
                 m,n = k/N1, k%N1
                 if (m+n <= max_order): 
-                    if flag_test:
+                    if make_labels:
                         label_arr[k+(N1*N2)*step] = (str("(%d, %d)" % (n,m)))
                     if 'XY' in basis:
                         arr = elliptical_shapelet(m,n,x0,y0,sx=a,sy=b,theta=theta)(Xv,Yv).flatten()
@@ -360,7 +440,7 @@ def decompose_compound(basis,\
                     ## n_max - defined as:
                     ## theta_max (galaxy size) / theta_min (smallest variation size) - 1  
 
-                    if flag_test:
+                    if make_labels:
                         ## To be consistent with the indexation of the basis matrix
                         ## D
                         label_arr[k_p+(N1*N2)*step] = (str("(%d, %d)" % (n,m))) 
