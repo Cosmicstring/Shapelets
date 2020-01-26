@@ -106,12 +106,12 @@ def _do_plotting(\
         try:
             plt.tight_layout()
         except RuntimeError as error:
-            print "RuntimeError {0}".format(error)
+            print("RuntimeError {0}".format(error))
             pass
         plt.savefig(path)
         plt.close()
     else:
-        print "Both arrays empty"
+        print("Both arrays empty")
 
 if __name__ == '__main__':
 
@@ -182,7 +182,7 @@ if __name__ == '__main__':
             beta_array_real = [image_data_real[2]]
             beta_array_noiseless = [image_data_noiseless[2]]
 
-        print "Getting the observed image %d data\n\n" % idx
+        print("Getting the observed image %d data\n\n" % idx)
 
         ## Get the data for the noisy image
         D_real, reconst_real, coeffs_real, label_arr_real = \
@@ -208,7 +208,7 @@ if __name__ == '__main__':
         reconst_rotated_arr.append(reconst_real)
     
         for theta in theta_arr:
-            print "Obtaining rotated dictionary by %f\n\n" % theta
+            print("Obtaining rotated dictionary by %f\n\n" % theta)
             
             image_data_real_rotated = np.asarray(image_data_real).copy(); 
             image_data_real_rotated[3] = image_data_real_rotated[3] + theta 
@@ -241,7 +241,7 @@ if __name__ == '__main__':
                 + solver + '_' + mid_word +'_' + str_img_idx + '_.png',\
                 theta_list = theta_list)
 
-        print "Getting the noiseless image %d data\n\n" % idx
+        print("Getting the noiseless image %d data\n\n" % idx)
         
         ## Get the data for the noiselss images
         D_noiseless, reconst_noiseless, coeffs_noiseless, label_arr_noiseless = \
@@ -263,7 +263,7 @@ if __name__ == '__main__':
         reconst_rotated_arr.append(reconst_noiseless)
     
         for theta in theta_arr:
-            print "Obtaining rotated dictionary by %f\n\n" % theta
+            print("Obtaining rotated dictionary by %f\n\n" % theta)
             
             image_data_real_rotated = np.asarray(image_data_noiseless).copy(); 
             image_data_real_rotated[3] = image_data_real_rotated[3] + theta 

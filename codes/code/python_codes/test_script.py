@@ -91,10 +91,10 @@ def _visualize(\
 
         sh_labels = np.asarray(sh_labels)
      
-        print "idx_1\n", idx_1
-        print "idx_2\n", idx_2
-        print "sh_labels\n", sh_labels
-        print "basis_labels\n", basis_labels   
+        print("idx_1\n", idx_1)
+        print("idx_2\n", idx_2)
+        print("sh_labels\n", sh_labels)
+        print("basis_labels\n", basis_labels)
         
         for i in xrange(len(sh_labels)):
             sh_label = sh_labels[i]
@@ -161,9 +161,9 @@ def _dist_matrix_angle_mat(coeffs_matrix,beta_array, mid_word = '', \
         galaxy_vectors = np.zeros((100,55))
         galaxy_vectors = coeffs_matrix[:, k, :]; 
         
-        print "beta %f:\n" % (beta)
-        print "Similarity between galaxy_vectors and coeffs_matrix:\n"
-        print np.allclose(galaxy_vectors, coeffs_matrix[:,k,:])
+        print("beta %f:\n" % (beta))
+        print("Similarity between galaxy_vectors and coeffs_matrix:\n")
+        print(np.allclose(galaxy_vectors, coeffs_matrix[:,k,:]))
         
         k+=1
         
@@ -253,18 +253,18 @@ def _SOM(data, labels,\
         verbose=verbose, \
         train_rough_len=train_rough_len, train_finetune_len=train_finetune_len)
     
-    print "Topographic error"
-    print som.calculate_topographic_error()
+    print("Topographic error")
+    print(som.calculate_topographic_error())
 
-    print "Final quantization error"
-    print np.mean(som._bmu[1])
+    print("Final quantization error")
+    print(np.mean(som._bmu[1]))
 
-    print "\n"
-    print "View_2D in process ...\n"
+    print("\n")
+    print("View_2D in process ...\n")
 
     map_size = som.calculate_map_size('rect')
-    print "Map size\n"
-    print map_size, "\n"
+    print("Map size\n")
+    print(map_size, "\n")
     
     str_mapsize_2 = str("%d" % (mapsize[1]))
     str_mapsize_1 = str("%d" % (mapsize[0]))
@@ -274,7 +274,7 @@ def _SOM(data, labels,\
     view2D.save('testing/SOM_' + mid_word + '_' + str_beta + '_' + str_mapsize_1 + '_' + str_mapsize_2 +'_.png')
     plt.clf()
 
-    print "UMatrix in process ...\n"
+    print("UMatrix in process ...\n")
 
     u_mat = sompy_c.umatrix.UMatrixView(10, 10, 'umatrix',\
             show_axis=True, text_size=8, show_text=True)
@@ -291,9 +291,9 @@ def _MDS(galaxy_vectors, \
     
     from sklearn import manifold
 
-    print "####################"
-    print "####### MDS ########"
-    print "####################"
+    print("####################")
+    print("####### MDS ########")
+    print("####################")
     
     dist_matrix = np.zeros((100,100))
 
@@ -304,7 +304,7 @@ def _MDS(galaxy_vectors, \
             diff = (galaxy_vectors[i] - galaxy_vectors[j])
             dist_matrix[i,j] = np.sqrt(np.dot(diff, diff)) 
                 
-    print dist_matrix
+    print(dist_matrix)
 
     mds = manifold.MDS(\
             n_components=n_components, metric=metric, \
@@ -347,7 +347,7 @@ if __name__ == '__main__':
     coeffs_val_cluster = np.asarray(coeffs_val_cluster)
     label_arr_cluster = np.asarray(label_arr_cluster)
     
-    print coeffs_val_cluster.shape
+    print(coeffs_val_cluster.shape)
     
     coeffs_matrix = coeffs_val_cluster.reshape((100,5,55))
     label_matrix = label_arr_cluster.reshape((100,5,55))

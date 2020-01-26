@@ -12,16 +12,16 @@ def generateGaussianTrainingSet():
     N_angles = 10#72
     N_train = N_sizes*N_shears*N_angles
     if N_train < img_size**2:
-        print "Too few training images to generate an \
-               overcomplete dictionary"
+        print("Too few training images to generate an \
+               overcomplete dictionary")
 
     pos_angles = np.linspace(0.,180.,N_angles)
     shears = np.arange(0.,1.,1./N_shears)
 
-    print "No. of training images = ", N_train
+    print("No. of training images = ", N_train)
 
     img = galsim.Image(img_size,img_size)
-    print "Generating training images ... "
+    print("Generating training images ... ")
 
     gal_flux = 1.e5
     noise = 30
@@ -37,8 +37,8 @@ def generateGaussianTrainingSet():
                 fname = 'test_'+str(N_size).zfill(2)+'_'+str(N_shear).zfill(2)+'_'+str(N_angle).zfill(2)
                 img.write(fname+'.fits',dir=destination)
 
-    print "Finished generating "+str(N_train)+" training images."
-    print "Destination folder: "+str(destination)
+    print("Finished generating "+str(N_train)+" training images.")
+    print("Destination folder: "+str(destination))
 
 def generateBDTrainingSet(btt):
     gsp = galsim.GSParams(maximum_fft_size=16384)
@@ -66,17 +66,17 @@ def generateBDTrainingSet(btt):
 
     N_train = N_sizes*(N_shears**2)*(N_angles**2)
     if N_train < img_size**2:
-        print "Too few training images to generate an \
-               overcomplete dictionary"
+        print("Too few training images to generate an \
+               overcomplete dictionary")
 
     theta_values = np.linspace(0.,180.,N_angles).tolist() # degrees
     pos_angles = [galsim.Angle(theta,galsim.degrees) for theta in theta_values]
     shears = np.arange(0.,1.,1./N_shears)
 
-    print "No. of training images = ", N_train
+    print("No. of training images = ", N_train)
 
     img = galsim.Image(img_size,img_size)
-    print "Generating training images ... "
+    print("Generating training images ... ")
 
     gal_flux = 5.e5
     noise = 10
@@ -100,7 +100,7 @@ def generateBDTrainingSet(btt):
                           '_'+str(N_disk_pos).zfill(2)
                   img.write(fname+'.fits',dir=destination)
 
-    print "Finished generating "+str(N_train)+" training images with bulge+disk components"
+    print("Finished generating "+str(N_train)+" training images with bulge+disk components")
                                                      
 def generateTestingSet():
     img_size = 64
