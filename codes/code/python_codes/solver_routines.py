@@ -21,7 +21,7 @@ def asses_diff(new_coefs, old_coefs):
     Calculate the relative difference in coefficients
     """
     diff_arr = np.zeros_like(old_coefs)
-    for i in xrange(len(old_coefs)):
+    for i in range(len(old_coefs)):
         if old_coefs[i] != 0:
             diff_arr[i] = np.abs(new_coefs[i]/old_coefs[i] - 1.)
         else:
@@ -96,7 +96,7 @@ def solver_SVD(D, signal, take_nonzero = 21, epsilon = 0.01, decomp_method = 'Du
     s = decide_nonzero(s0, max(s0), take_nonzero, epsilon)
     n_nonzero = len(s)
 
-    print 'Biggest trashed singular value: ', s0[n_nonzero]
+    print('Biggest trashed singular value: ', s0[n_nonzero])
     
     ## Rows of V span the row space of D
     #VT[:,n_nonzero:] = 0
@@ -110,7 +110,7 @@ def solver_SVD(D, signal, take_nonzero = 21, epsilon = 0.01, decomp_method = 'Du
     S_dual = np.zeros_like(D)
 
     ## Put singular values on the diagonal
-    for i in xrange(n_nonzero):
+    for i in range(n_nonzero):
         S[i,i] = s[i]
         S_dual[i,i] = 1./s[i]
  
@@ -119,10 +119,10 @@ def solver_SVD(D, signal, take_nonzero = 21, epsilon = 0.01, decomp_method = 'Du
         ## If it is prefered to select top n_nonzero coefs
         if n_nonzero < len(np.where(coeffs_SVD_r != 0)[0]):
             sorted_indices = np.abs(coeffs_SVD_r).argsort()
-            print "Dual"
-            print "Biggest thrown out coeff: ", coeffs_SVD_r[sorted_indices[-(n_nonzero+1)]]
+            print("Dual")
+            print("Biggest thrown out coeff: ", coeffs_SVD_r[sorted_indices[-(n_nonzero+1)]])
             idx_nonzero = sorted_indices[-n_nonzero:]
-            for i in xrange(len(coeffs_SVD_r)):
+            for i in range(len(coeffs_SVD_r)):
                 if not(i in idx_nonzero):
                     coeffs_SVD_r[i] = 0
 
@@ -136,7 +136,7 @@ def solver_SVD(D, signal, take_nonzero = 21, epsilon = 0.01, decomp_method = 'Du
         ## of the basis matrix
         
         idx_col = []
-        for j in xrange(D.shape[1]):
+        for j in range(D.shape[1]):
             ## If the column has a shapelet vector inside
             ## take it
             if (len(np.where(D[:,j]!=0)[0]) != 0):
@@ -167,9 +167,9 @@ def solver_SVD(D, signal, take_nonzero = 21, epsilon = 0.01, decomp_method = 'Du
         if n_nonzero < len(idx_col):
             sorted_indices = np.abs(coeffs_SVD_r).argsort()
             idx_nonzero = sorted_indices[-n_nonzero:]
-            print "Pseudo Inverse"
-            print "Biggest thrown out coeff: ", coeffs_SVD_r[sorted_indices[-(n_nonzero+1)]]
-            for i in xrange(len(coeffs_SVD_r)):
+            print("Pseudo Inverse")
+            print("Biggest thrown out coeff: ", coeffs_SVD_r[sorted_indices[-(n_nonzero+1)]])
+            for i in range(len(coeffs_SVD_r)):
                 if not(i in idx_nonzero):
                     coeffs_SVD_r[i] = 0.
 

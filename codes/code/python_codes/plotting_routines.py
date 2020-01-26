@@ -120,8 +120,8 @@ def coeff_plot_polar(coeffs, N1,N2, \
         N_range = N1
     
     k = 0
-    for n in xrange(N_range):
-        for m in xrange(-n,n+1,2):
+    for n in range(N_range):
+        for m in range(-n,n+1,2):
             x.append(n)
             y.append(m)
             color_vals.append(coeffs[k])
@@ -222,7 +222,7 @@ def _get_gaussian_noise_params(arr,f_path, bins_num = None):
     ## Flatten the bin_edges array by takin the central values
     bin_edges = np.zeros(len(hist))
 
-    for i in xrange(len(hist)):
+    for i in range(len(hist)):
         bin_edges[i] = (bin_edges_tmp[i] + bin_edges_tmp[i+1])/2.
 
     ## Get the initial guess
@@ -286,7 +286,7 @@ def plot_decomposition(basis, image, size_X, size_Y, \
     elif basis == 'XY' or basis == 'XY_Elliptical':
         base_coefs = base_coefs.reshape(N1,N2)
 
-    for i in xrange(len(beta_array)):
+    for i in range(len(beta_array)):
        
         shapelet_reconst = shapelet_reconst_array[i]
         residual = residual_array[i]
@@ -306,7 +306,7 @@ def plot_decomposition(basis, image, size_X, size_Y, \
             
         if np.count_nonzero(coefs) != 0:
 
-            print 'beta ', beta_array[i], 'Decomp ', coefs.shape
+            print('beta ', beta_array[i], 'Decomp ', coefs.shape)
 
             fig, ax = plt.subplots(2,2, figsize = (10, 10))
             if ('XY' in basis):
@@ -400,7 +400,7 @@ def plot_solution(basis, N1,N2,image_initial,size_X, size_Y,\
         else:
             flag = 1 
 
-    for i in xrange(len(beta_array)): 
+    for i in range(len(beta_array)): 
         
         str_beta = str("%.3f" % (beta_array[i]))
 
@@ -414,7 +414,7 @@ def plot_solution(basis, N1,N2,image_initial,size_X, size_Y,\
             coefs = coefs_initial[left:right]
         
         if np.count_nonzero(coefs) != 0:
-            print 'beta ', beta_array[i], 'shape: ', coefs.shape
+            print('beta ', beta_array[i], 'shape: ', coefs.shape)
 
 
             fig2, ax2 = plt.subplots(2,2, figsize = (10,10))
@@ -531,8 +531,8 @@ def stability_plots(basis,solver,coefs,\
         plt.savefig(f_path_to_save + '_.png')
         return fig, ax
     else:
-        print "All coefs zero for:\n"
-        print "%s\n" % (f_path_to_save)
+        print("All coefs zero for:\n")
+        print("%s\n" % (f_path_to_save))
         return None, None
 
 def plot_stability(coeff_stability, coeff_0, N1, N2, noise_img_num, \
@@ -574,7 +574,7 @@ def plot_stability(coeff_stability, coeff_0, N1, N2, noise_img_num, \
 
     ## Find the mean coefficients and the std_rel
     ## <N.C>_i and Var(N.C_i)
-    for i in xrange(len_coeffs):
+    for i in range(len_coeffs):
         
         ## Add all the values in different noise realizations
         ## of the same coordinate
@@ -624,7 +624,7 @@ def plot_stability(coeff_stability, coeff_0, N1, N2, noise_img_num, \
         
         str_s_to_n = str("%.3e" % (signal_to_noise)) 
 
-        for i in xrange(len(beta_array)):
+        for i in range(len(beta_array)):
             
             str_beta = str("%.2e" % (beta_array[i]))
     

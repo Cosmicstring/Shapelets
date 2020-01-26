@@ -83,7 +83,7 @@ def shapelet1d(n,x0=0,s=1):
     """
     def sqfac(k):
         fac = 1.
-        for i in xrange(k):
+        for i in range(k):
             fac *= np.sqrt(i+1)
         return fac
 
@@ -223,7 +223,7 @@ def decompose_cartesian(basis,\
 
     ## Add one more diagonal to the basis matrix
     max_order = get_max_order(basis,n_max) + 1
-    for k in xrange(N1*N2):
+    for k in range(N1*N2):
         m,n = k/N1, k%N1
         if (m+n <= max_order): 
             if make_labels:
@@ -308,8 +308,8 @@ def decompose_polar(basis,\
     
     ## This needs to go to max_order + 1, because maximum order would not be included
     ## in the iteration
-    for n in xrange(max_order + 1):
-        for m in xrange(-n,n+1,2):
+    for n in range(max_order + 1):
+        for m in range(-n,n+1,2):
             
             ## n_max - defined as:
             ## theta_max (galaxy size) / theta_min (smallest variation size) - 1  
@@ -414,7 +414,7 @@ def decompose_compound(basis,\
         a = sigma / np.sqrt(q)
         b = sigma * np.sqrt(q)
         if 'XY' in basis:
-            for k in xrange(N1*N2):
+            for k in range(N1*N2):
                 ## Number of cols of D is N1*N2*len(beta_array)
                 ## beta should change when one whole basis is sweeped by k
                 m,n = k/N1, k%N1
@@ -435,8 +435,8 @@ def decompose_compound(basis,\
         elif 'Polar' in basis:
             
             k_p = 0
-            for n in xrange(max_order + 1):
-                for m in xrange(-n,n+1,2): 
+            for n in range(max_order + 1):
+                for m in range(-n,n+1,2): 
                     ## n_max - defined as:
                     ## theta_max (galaxy size) / theta_min (smallest variation size) - 1  
 

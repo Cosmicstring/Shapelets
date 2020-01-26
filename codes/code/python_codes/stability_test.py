@@ -1,7 +1,8 @@
 import galsim
-import pyfits
 import time
 import numpy as np
+
+from astropy.io import fits
 
 from shapelet_dicts import *
 from plotting_routines import plot_stability
@@ -11,7 +12,7 @@ from utils.galsim_utils import *
 from utils.I_O_utils import *
 from utils.shapelet_utils import *
 
-import pdb; pdb.set_trace()
+# import pdb; pdb.set_trace()
 
 
 def do_noise_iteration(image_0,image_data,noise_img,\
@@ -55,23 +56,23 @@ def do_noise_iteration(image_0,image_data,noise_img,\
         weight_image = weight_image.flatten()
         signal_image = image_sample.flatten()
         
-        print "Testing the noise_scale generator"
-        print np.sum(weight_image**2) / 50.**2
+        print("Testing the noise_scale generator")
+        print(np.sum(weight_image**2) / 50.**2)
 
         signal_to_noise = (1./noise_scale) * np.dot(weight_image,signal_image) \
                 / np.sum(weight_image)
      
-        print "Signal to Noise: \n"
-        print signal_to_noise
+        print("Signal to Noise: \n")
+        print(signal_to_noise)
 
         ## Make folders for storage
         f_path = 'Plots/'+ str("%d" % (img_idx)) + '/' + str("%.3e" % (noise_scale)) + '/'
         mkdir_p(f_path)
         
         k=0
-        for i in xrange(noise_img_num):
+        for i in range(noise_img_num):
 
-            print "Noise iteration:\t%d" % (i)
+            print("Noise iteration:\t%d" % (i))
             ## Add the noise_matrix to the 0 noise image
             image = image_0 + noise_scale*noise_img[:,i].reshape(size_X,size_Y)
  
@@ -110,9 +111,9 @@ def get_observed_image_decomp(\
         select_img_idx = 91, n_max = 50):
 
     ## Take the same beta scale and theta as for the modeled image
-    img_obs = pyfits.getdata('../../data/cube_real.fits')[select_img_idx]
+    img_obs = fits.getdata('../../data/cube_real.fits')[select_img_idx]
     img_obs -= 1e6*0.16**2
-    img_ = pyfits.getdata('../../data/cube_real_noiseless.fits')[select_img_idx]
+    img_ = fits.getdata('../../data/cube_real_noiseless.fits')[select_img_idx]
     img_ -= 1e6*0.16**2
 
     galsim_image = galsim.Image(img_, scale = 1.0)
@@ -153,7 +154,7 @@ def prep_and_do_noise_iter(image_data,\
     f_path = 'Plots/' +str("%d" % (select_img_idx)) + '/' + str("%.3e" % (0.0)) + '/'
     mkdir_p(f_path)
     
-    cube = pyfits.getdata('../../data/cube_real_noiseless.fits')
+    cube = fits.getdata('../../data/cube_real_noiseless.fits')
     background = 1.e6*0.16**2
     
     img = cube[select_img_idx] - background
@@ -262,12 +263,12 @@ def test_stability(solver, basis, \
                 ## Num_of_shapelets to control the number of shapelet vectors
                 ## included in the basis
                 n_max = 2*Num_of_shapelets
-            for select_img_idx in xrange(100):
+            for select_img_idx in range(100):
 
-                print "current image:\n"
-                print select_img_idx
+                print("current image:\n")
+                print(select_img_idx)
                 
-                print "Getting observed decomposition"
+                print("Getting observed decomposition")
 
                 obs_time0 = time.time()
                 get_observed_image_decomp(\
@@ -276,10 +277,10 @@ def test_stability(solver, basis, \
                         Num_of_shapelets=Num_of_shapelets, \
                         select_img_idx = select_img_idx, plot_decomp = True,\
                         n_max = n_max)
-                print "Time taken observed image decomp: "
-                print "%s seconds" % (time.time() - obs_time0)
+                print("Time taken observed image decomp: ")
+                print("%s seconds" % (time.time() - obs_time0))
 
-                print "Doing noise iteration"
+                print("Doing noise iteration")
 
                 noise_time0 = time.time()
                 prep_and_do_noise_iter(image_data,\
@@ -290,8 +291,8 @@ def test_stability(solver, basis, \
                         select_img_idx = select_img_idx, plot_decomp = False,\
                         n_max = n_max)
                 
-                print "Time taken for noise iteration: "
-                print "%s seconds" % (time.time() - noise_time0)
+                print("Time taken for noise iteration: ")
+                print("%s seconds" % (time.time() - noise_time0))
 
     elif(solver == 'lstsq'):
         
@@ -314,7 +315,7 @@ def test_stability(solver, basis, \
         
         for Num_of_shapelets in Num_of_shapelets_array:
             
-            for select_img_idx in xrange(100):
+            for select_img_idx in range(100):
                 get_observed_image_decomp(\
                         N1=N1,N2=N2,basis=basis,solver=solver,\
                         image=None, coeff_0=None, noise_scale=0,\
@@ -347,7 +348,7 @@ if __name__=='__main__':
     noisy_mat_num = 10
 
     noise_matrix = np.zeros((size_X*size_Y , noisy_mat_num))
-    for i in xrange(noisy_mat_num):
+    for i in range(noisy_mat_num):
         noise_matrix[:,i] = np.random.randn(size_X*size_Y)
 
     for noise_scale in [noise_array[0], noise_array[-1]]:

@@ -21,7 +21,7 @@ from utils.galsim_utils import *
 #import matplotlib
 #matplotlib.use("Agg")
 
-import pyfits
+from astropy.io import fits
 import galsim
 import math
 
@@ -37,14 +37,14 @@ def check_orthonormality():
     X = np.arange(-16,16,0.01)
     Y = np.arange(-16,16,0.01)
 
-    for k1 in xrange(M*N):
+    for k1 in range(M*N):
         m1,n1 = k1/N, k1%N
         b1 = shapelet2d(m1,n1,x0=0.3,y0=0.4,sx=2,sy=3)(X,Y)
-        for k2 in xrange(M*N):
+        for k2 in range(M*N):
             m2,n2 = k2/N, k1%N
             b2 = shapelet2d(m2,n2,x0=0.3,y0=0.4,sx=2,sy=3)(X,Y)
 
-            print m1-m2,n1-n2,np.sum(b1*b2)*(0.01/2)*(0.01/3)
+            print(m1-m2,n1-n2,np.sum(b1*b2)*(0.01/2)*(0.01/3))
 
 def calculate_spark(D):
     pass
@@ -82,12 +82,12 @@ def show_some_shapelets(M=5,N=5, theta = 0., sigma=1., q=1., basis = 'Polar_Elli
         ## in the matrix
         indices = []
         h=N;w=N;
-        for p in xrange(N+w-1):
-            for q in xrange(min(p,h-1),max(0,p-w+1)-1,-1):
+        for p in range(N+w-1):
+            for q in range(min(p,h-1),max(0,p-w+1)-1,-1):
                 indices.append((h-1-q,p-q)) 
         k=0;
-        for n in xrange(N):
-            for m in xrange(-n,n+1,2):
+        for n in range(N):
+            for m in range(-n,n+1,2):
                 arr = polar_shapelets_refregier(n,m,sigma,theta=theta)(R,Phi)
                 ax[indices[k]].imshow(arr,cmap=cm.bwr,vmax=1.,vmin=-0.5)
                 ax[indices[k]].set_title(str(m)+','+str(n), fontsize=20)
@@ -98,8 +98,8 @@ def show_some_shapelets(M=5,N=5, theta = 0., sigma=1., q=1., basis = 'Polar_Elli
             fig.delaxes(ax[indices[k]]);k+=1; 
     elif 'XY' in basis:
         fig,ax = plt.subplots(M,N, figsize=(20,20))
-        for n in xrange(N):
-            for m in xrange(M):
+        for n in range(N):
+            for m in range(M):
                 arr = elliptical_shapelet(m,n,sx=1.,sy=1.,theta=theta)(Xv,Yv)
                 ax[m,n].imshow(arr,cmap=cm.bwr,vmax=1.,vmin=-0.5)
                 ax[m,n].set_title(str(m)+','+str(n), fontsize=20)
@@ -171,7 +171,7 @@ def shapelet_decomposition(image_data,\
         ## Aquireing the noiseless image
         flag_test = True
         ## Select image 91 from the cube_real_noiseless.fits file
-        image = pyfits.getdata('../../data/cube_real_noiseless.fits')[91]
+        image = fits.getdata('../../data/cube_real_noiseless.fits')[91]
         ## This is the background value for the galsim array images
         background = 1.e6*0.16**2
         image -= background
@@ -294,23 +294,23 @@ def shapelet_decomposition(image_data,\
                 polar_basis = 'refregier',\
                 q=q, theta = theta)
     
-    for i in xrange(len(beta_array)):
+    for i in range(len(beta_array)):
         residual[i]= signal - shapelet_reconst[i]
         residual_energy_fraction[i] = np.sum(residual[i]**2)/np.sum(signal**2)
         recovered_energy_fraction[i] = np.sum(shapelet_reconst[i]**2)/np.sum(signal**2)
 
     if 'Polar' in basis:
-        print "Comparing moments_amp to base_coefs[0]: ", \
-                np.abs(base_coefs[0]), shape.moments_amp
-        print "Base coefficients sum over signal", \
+        print("Comparing moments_amp to base_coefs[0]: ", \
+                np.abs(base_coefs[0]), shape.moments_amp)
+        print("Base coefficients sum over signal", \
             (np.sum(base_coefs**2))/(np.sum(signal**2)), \
-            (np.sum(residual**2)/np.sum(signal**2)) 
+            (np.sum(residual**2)/np.sum(signal**2)))
     else:
-        print "Comparing moments_amp to base_coefs[0,0]", \
-                np.abs(base_coefs[0,0]), shape.moments_amp
-        print "Base coefficients sum over signal", \
+        print("Comparing moments_amp to base_coefs[0,0]", \
+                np.abs(base_coefs[0,0]), shape.moments_amp)
+        print("Base coefficients sum over signal", \
             (np.sum(base_coefs**2))/(np.sum(signal**2)), \
-            (np.sum(residual**2)/np.sum(signal**2)) 
+            (np.sum(residual**2)/np.sum(signal**2)))
 
     ## Make the strings for nice representation in the output
     if noise_scale != None:
@@ -351,14 +351,14 @@ def shapelet_decomposition(image_data,\
     reconst_galsim = galsim.Image(reconst, scale =1.0, xmin=0, ymin=0)
     try:
         reconst_shape = reconst_galsim.FindAdaptiveMom()
-        print "Shape of reconstruction"
+        print("Shape of reconstruction")
         reconst_x0, reconst_y0, reconst_sigma, reconst_theta, reconst_q = get_moments(reconst_shape)
-        print "x0\ty0\n"
-        print reconst_x0,'\t',reconst_y0,'\n'
-        print "sigma\ttheta\tq\n"
-        print reconst_sigma,'\t', reconst_theta,'\t', reconst_q,'\n' 
+        print("x0\ty0\n")
+        print(reconst_x0,'\t',reconst_y0,'\n')
+        print("sigma\ttheta\tq\n")
+        print(reconst_sigma,'\t', reconst_theta,'\t', reconst_q,'\n') 
     except RuntimeError as error:
-        print "RuntimeError {0}".format(error)
+        print("RuntimeError {0}".format(error))
         pass 
 
     if make_labels == True:
