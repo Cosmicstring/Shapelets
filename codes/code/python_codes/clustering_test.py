@@ -1,5 +1,7 @@
 import galsim
-import pyfits
+
+from astropy.io import fits
+
 import time
 import numpy as np
 import matplotlib.pyplot as plt
@@ -276,8 +278,8 @@ def _gen_cluster_data(\
     """
     start_time= time.time()
 
-    cube = pyfits.getdata("../../data/cube_real.fits")
-    cube_noiseless = pyfits.getdata("../../data/cube_real_noiseless.fits")
+    cube = fits.getdata("../../data/cube_real.fits")
+    cube_noiseless = fits.getdata("../../data/cube_real_noiseless.fits")
     cube_res = cube_noiseless
 
     background = 1e6*0.16**2

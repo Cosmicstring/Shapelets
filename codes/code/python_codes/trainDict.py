@@ -1,7 +1,8 @@
 import glob
 import numpy as np
 from sklearn.decomposition import dict_learning as DL
-import pyfits
+
+from astropy.io import fits
 import pickle
 
 K = 80
@@ -13,7 +14,7 @@ print "nData = ", nData
 Data = np.zeros((nData,size**2))
 for i in xrange(nData):
     fn = fnames[i]
-    img = pyfits.getdata(fn)
+    img = fits.getdata(fn)
     Data[i,:] = img.ravel()
     if i%100==0:
         print i

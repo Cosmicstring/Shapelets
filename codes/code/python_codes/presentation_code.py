@@ -24,7 +24,7 @@ from utils.shapelet_utils import *
 
 #import pdb; pdb.set_trace()
 
-import pyfits
+from astropy.io import fits
 import galsim
 import math
 
@@ -117,8 +117,8 @@ if __name__ == '__main__':
 
     ## Get the image from the galsim real galaxy catalog
 
-    cube_real = pyfits.getdata('../../data/cube_real.fits')
-    cube_noiseless = pyfits.getdata('../../data/cube_real_noiseless.fits')
+    cube_real = fits.getdata('../../data/cube_real.fits')
+    cube_noiseless = fits.getdata('../../data/cube_real_noiseless.fits')
 
     basis = 'Compound_Polar'; N1 = 20; N2=20; solver = 'lasso'; n_max=55; 
     Num_of_shapelets = 28; alpha = 0.01; snr = 50.;
