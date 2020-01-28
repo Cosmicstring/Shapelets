@@ -58,8 +58,8 @@ def _do_plotting(\
 
     if theta_list !=[]:
         t=0
-        for i in xrange(nrows):
-            for j in xrange(ncols):
+        for i in range(nrows):
+            for j in range(ncols):
                 theta_ = theta_list[t]
                 str_theta = str("%.1f" % (np.degrees(theta_)))
                 ax_ = ax[i,j]
@@ -80,8 +80,8 @@ def _do_plotting(\
         plt.close()
     elif scales != []:
         t=0
-        for i in xrange(nrows):
-            for j in xrange(ncols):
+        for i in range(nrows):
+            for j in range(ncols):
                 str_scale = str("%.1f" % (scales_[t]))
                 ax_ = ax[i,j]
                 img_ = reconst_scaled_real[t]
@@ -129,7 +129,7 @@ if __name__ == '__main__':
     ## galsim example catalogue
     background = 1.e6*0.16**2
     
-    root_path = '/home/kostic/Documents/_Presentation/'
+    root_path = '/afs/mpa/home/akostic/Documents/andrija-kostic/PhD_applications/Shapelets/codes/code/python_codes/'
     Path_noisy_0 = root_path + 'Observed/'
     Path_noiseless_0 = root_path + 'Noiseless/'
     Path_theta_noisy_0 = Path_noisy_0 + 'theta_rotation/'
