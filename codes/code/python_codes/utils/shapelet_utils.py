@@ -224,7 +224,7 @@ def decompose_cartesian(basis,\
     ## Add one more diagonal to the basis matrix
     max_order = get_max_order(basis,n_max) + 1
     for k in range(N1*N2):
-        m,n = k/N1, k%N1
+        m,n = int(k/N1), int(k%N1)
         if (m+n <= max_order): 
             if make_labels:
                 ## To be consistent with indexation of the basis matrix
@@ -417,7 +417,7 @@ def decompose_compound(basis,\
             for k in range(N1*N2):
                 ## Number of cols of D is N1*N2*len(beta_array)
                 ## beta should change when one whole basis is sweeped by k
-                m,n = k/N1, k%N1
+                m,n = int(k/N1), int(k%N1)
                 if (m+n <= max_order): 
                     if make_labels:
                         label_arr[k+(N1*N2)*step] = (str("(%d, %d)" % (n,m)))

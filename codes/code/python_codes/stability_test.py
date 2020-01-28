@@ -22,7 +22,7 @@ def do_noise_iteration(image_0,image_data,noise_img,\
         basis, solver,\
         noise_scale,noise_img_num,\
         Num_of_shapelets = 15, alpha = 0.0001,\
-        plot_decomp = True,\
+        plot_decomp = True, plot_sol = True,\
         n_max = 21, \
         mid_word = '', img_idx = 91, perturbed_flag=0):
     """
@@ -61,14 +61,17 @@ def do_noise_iteration(image_0,image_data,noise_img,\
 
         signal_to_noise = (1./noise_scale) * np.dot(weight_image,signal_image) \
                 / np.sum(weight_image)
-     
-        print("Signal to Noise: \n")
-        print(signal_to_noise)
 
         ## Make folders for storage
         f_path = 'Plots/'+ str("%d" % (img_idx)) + '/' + str("%.3e" % (noise_scale)) + '/'
         mkdir_p(f_path)
-        
+
+        f_SNR = open(f_path + "SNR_{}.txt".format(img_idx), "w+")
+
+        f_SNR.write("Noise scale: {} \n".format(noise_scale))
+        f_SNR.write("Signal to Noise: {} \n".format(signal_to_noise))
+        f_SNR.close()
+
         k=0
         for i in range(noise_img_num):
 
@@ -82,7 +85,8 @@ def do_noise_iteration(image_0,image_data,noise_img,\
                     N1=N1,N2=N2,basis=basis,solver=solver,\
                     image=image, coeff_0=coeff_0, noise_scale=signal_to_noise,\
                     Num_of_shapelets = Num_of_shapelets, alpha_ = alpha,\
-                    plot_decomp = plot_decomp,beta_array = beta_arr,\
+                    plot_decomp = plot_decomp, plot_sol = plot_sol,\
+                    beta_array = beta_arr,\
                     n_max = n_max,\
                     column_number = i)
             
@@ -129,7 +133,7 @@ def get_observed_image_decomp(\
     else:
         beta_array = np.asarray([sigma])
 
-    f_path = 'Plots/' + str(select_img_idx) + '/Observed/'
+    f_path = 'Stability_Plots/' + str(select_img_idx) + '/Observed/'
     mkdir_p(f_path)
  
     foo,foo =\
@@ -148,10 +152,10 @@ def prep_and_do_noise_iter(image_data,\
         image=None, coeff_0=None,\
         Num_of_shapelets = 21, alpha = 0.01, \
         plot_decomp = True,\
-        select_img_idx = 91, n_max = 50, perturbed_flag=1):
+        select_img_idx = 51, n_max = 50, perturbed_flag=1):
     
     ## Make the no noise image
-    f_path = 'Plots/' +str("%d" % (select_img_idx)) + '/' + str("%.3e" % (0.0)) + '/'
+    f_path = 'Stability_Plots/' +str("%d" % (select_img_idx)) + '/' + str("%.3e" % (0.0)) + '/'
     mkdir_p(f_path)
     
     cube = fits.getdata('../../data/cube_real_noiseless.fits')
@@ -173,6 +177,8 @@ def prep_and_do_noise_iter(image_data,\
         if not perturbed_flag:
             beta_array = np.asarray([sigma/4., sigma/2., sigma, sigma*2, sigma*4])
         else:
+            # Here we want to also check how sensitive the reconstruction is
+            # when we also give in the wrong beta scales for the image!
             beta_array = [1.881, 2.097, 2.531, 3.182, 4.918]
     else:
         beta_array = np.asarray([sigma])
@@ -181,9 +187,10 @@ def prep_and_do_noise_iter(image_data,\
             shapelet_decomposition(image_data,\
             f_path = f_path,\
             N1=N1,N2=N2,basis=basis,solver=solver,\
-            image=img, coeff_0=None, noise_scale=0,\
+            image=img, coeff_0=None, noise_scale=0.,\
             Num_of_shapelets=Num_of_shapelets, alpha_ = alpha, \
-            plot_decomp = False, make_labels = True,\
+            plot_decomp = plot_decomp, plot_sol = True, \
+            make_labels = True,\
             n_max = n_max, beta_array = beta_array)
     
     if solver != 'lstsq':
@@ -203,7 +210,7 @@ def prep_and_do_noise_iter(image_data,\
                 basis, solver,\
                 noise_scale,noise_img_num,\
                 Num_of_shapelets = Num_of_shapelets, alpha=alpha, \
-                plot_decomp = False, \
+                plot_decomp = False, plot_sol= False,\
                 n_max = n_max,\
                 mid_word = mid_word, img_idx = select_img_idx,\
                 perturbed_flag = perturbed_flag)
@@ -211,7 +218,7 @@ def prep_and_do_noise_iter(image_data,\
 def test_stability(solver, basis, \
         noise_scale, noise_img = None, noise_img_num = 10,\
         size_X = 78, size_Y = 78, \
-        alpha_ = None, Num_of_shapelets_array = None, select_img_idx = 91):
+        alpha_ = None, Num_of_shapelets_array = None, selected_images = [51]):
     
     """
     Do the stability test of different kinds of algorithms at disposal
@@ -234,19 +241,20 @@ def test_stability(solver, basis, \
             
             for Num_of_shapelets in [Num_of_shapelets_array[2]]:
             
-                get_observed_image_decomp(\
-                    N1=N1,N2=N2,basis=basis,solver=solver,\
-                    image=None, coeff_0=None, noise_scale=0,\
-                    Num_of_shapelets=Num_of_shapelets,alpha = alpha, \
-                    select_img_idx = select_img_idx, plot_decomp = True,\
-                    n_max = n_max)
+                # get_observed_image_decomp(\
+                #     N1=N1,N2=N2,basis=basis,solver=solver,\
+                #     image=None, coeff_0=None, noise_scale=0,\
+                #     Num_of_shapelets=Num_of_shapelets,alpha = alpha, \
+                #     select_img_idx = select_img_idx, plot_decomp = True,\
+                #     n_max = n_max)
                 
                 prep_and_do_noise_iter(image_data,\
                     noise_img, noise_img_num,noise_scale,\
                     N1=N1,N2=N2,basis=basis,solver=solver,\
                     image=None, coeff_0=None,\
                     Num_of_shapelets=Num_of_shapelets, alpha = alpha, \
-                    select_img_idx = select_img_idx, plot_decomp = False,\
+                    select_img_idx = select_img_idx, \
+                    plot_decomp = True,\
                     n_max = n_max)
 
                             
@@ -263,22 +271,22 @@ def test_stability(solver, basis, \
                 ## Num_of_shapelets to control the number of shapelet vectors
                 ## included in the basis
                 n_max = 2*Num_of_shapelets
-            for select_img_idx in range(100):
+            for select_img_idx in selected_images:
 
                 print("current image:\n")
                 print(select_img_idx)
                 
-                print("Getting observed decomposition")
+                # print("Getting observed decomposition")
 
-                obs_time0 = time.time()
-                get_observed_image_decomp(\
-                        N1=N1,N2=N2,basis=basis,solver=solver,\
-                        image=None, coeff_0=None, noise_scale=0,\
-                        Num_of_shapelets=Num_of_shapelets, \
-                        select_img_idx = select_img_idx, plot_decomp = True,\
-                        n_max = n_max)
-                print("Time taken observed image decomp: ")
-                print("%s seconds" % (time.time() - obs_time0))
+                # obs_time0 = time.time()
+                # get_observed_image_decomp(\
+                #         N1=N1,N2=N2,basis=basis,solver=solver,\
+                #         image=None, coeff_0=None, noise_scale=0,\
+                #         Num_of_shapelets=Num_of_shapelets, \
+                #         select_img_idx = select_img_idx, plot_decomp = True,\
+                #         n_max = n_max)
+                # print("Time taken observed image decomp: ")
+                # print("%s seconds" % (time.time() - obs_time0))
 
                 print("Doing noise iteration")
 
@@ -288,7 +296,8 @@ def test_stability(solver, basis, \
                         N1=N1,N2=N2,basis=basis,solver=solver,\
                         image=None, coeff_0=None,\
                         Num_of_shapelets=Num_of_shapelets, \
-                        select_img_idx = select_img_idx, plot_decomp = False,\
+                        select_img_idx = select_img_idx, \
+                        plot_decomp = True,\
                         n_max = n_max)
                 
                 print("Time taken for noise iteration: ")
@@ -296,39 +305,41 @@ def test_stability(solver, basis, \
 
     elif(solver == 'lstsq'):
         
-        get_observed_image_decomp(\
-                    N1=N1,N2=N2,basis=basis,solver=solver,\
-                    image=None, coeff_0=None, noise_scale=0,\
-                    Num_of_shapelets=Num_of_shapelets, \
-                    select_img_idx = select_img_idx, plot_decomp = True,\
-                    n_max = n_max)
+        # get_observed_image_decomp(\
+        #             N1=N1,N2=N2,basis=basis,solver=solver,\
+        #             image=None, coeff_0=None, noise_scale=0,\
+        #             Num_of_shapelets=Num_of_shapelets, \
+        #             select_img_idx = select_img_idx, plot_decomp = True,\
+        #             n_max = n_max)
         
         prep_and_do_noise_iter(image_data,\
                     noise_img, noise_img_num,noise_scale,\
                     N1=N1,N2=N2,basis=basis,solver=solver,\
                     image=None, coeff_0=None,\
                     Num_of_shapelets=Num_of_shapelets, \
-                    select_img_idx = select_img_idx, plot_decomp = False,\
+                    select_img_idx = select_img_idx, 
+                    plot_decomp = True,\
                     n_max = n_max)
         
     elif(solver == 'svd'):
         
         for Num_of_shapelets in Num_of_shapelets_array:
             
-            for select_img_idx in range(100):
-                get_observed_image_decomp(\
-                        N1=N1,N2=N2,basis=basis,solver=solver,\
-                        image=None, coeff_0=None, noise_scale=0,\
-                        Num_of_shapelets=Num_of_shapelets, \
-                        select_img_idx = select_img_idx, plot_decomp = True,\
-                        n_max = n_max)
+            for select_img_idx in selected_images:
+                # get_observed_image_decomp(\
+                #         N1=N1,N2=N2,basis=basis,solver=solver,\
+                #         image=None, coeff_0=None, noise_scale=0,\
+                #         Num_of_shapelets=Num_of_shapelets, \
+                #         select_img_idx = select_img_idx, plot_decomp = True,\
+                #         n_max = n_max)
 
                 prep_and_do_noise_iter(image_data,\
                         noise_img, noise_img_num,noise_scale,\
                         N1=N1,N2=N2,basis=basis,solver=solver,\
                         image=None, coeff_0=None,\
                         Num_of_shapelets=Num_of_shapelets, \
-                        select_img_idx = select_img_idx, plot_decomp = False,\
+                        select_img_idx = select_img_idx, \
+                        plot_decomp = True,\
                         n_max = n_max)
 
 
@@ -338,7 +349,10 @@ if __name__=='__main__':
     methods = ['lasso', 'omp', 'svd', 'lstsq']
     
     ## Range chose so that SNR is in range ~20 -- ~50
-    noise_array = np.linspace(2e-4, 4e-4, 5, endpoint=True)
+    min_noise = 5e-5; max_noise = 2e-4; noise_realizations = 5;
+    step = (max_noise - min_noise) / noise_realizations
+
+    noise_array = np.arange(min_noise, max_noise, step)
     alpha_ = np.logspace(-5,-1.3,6)
     basis_array = ['XY_Elliptical', 'Polar_Elliptical','Polar', 'XY', 'Compound_XY','Compound_Polar']
 
@@ -351,7 +365,7 @@ if __name__=='__main__':
     for i in range(noisy_mat_num):
         noise_matrix[:,i] = np.random.randn(size_X*size_Y)
 
-    for noise_scale in [noise_array[0], noise_array[-1]]:
+    for noise_scale in noise_array:
         # Select a method for fitting the coefficients
         for basis in [basis_array[-1]]:
             

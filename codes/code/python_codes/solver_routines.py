@@ -40,9 +40,11 @@ def solver_omp(D, signal, N1,N2, Num_of_shapelets = None):
     
     """
     n_nonzero_coefs = Num_of_shapelets
+
     if Num_of_shapelets == None:
         n_nonzero_coefs = N1*N2/4
-    omp = OMP(n_nonzero_coefs = n_nonzero_coefs)
+    
+    omp = OMP(n_nonzero_coefs = int(n_nonzero_coefs))
     omp.fit(D,signal)
     sparse_coefs = omp.coef_
     sparse_idx = sparse_coefs.nonzero()
@@ -333,7 +335,7 @@ def select_solver_do_fitting_plot(\
     end_word = str(n_nonzero_coefs)
     folder_path_word = f_path + solver + '/' + mid_path_word + '/'
  
-    if noise_scale==None:
+    if noise_scale==0.:
         coefs_plot = coeffs
     else:
         coefs_plot = asses_diff(coeffs,coeff_0)

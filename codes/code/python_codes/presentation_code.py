@@ -22,7 +22,7 @@ from utils.galsim_utils import *
 from utils.I_O_utils import *
 from utils.shapelet_utils import *
 
-#import pdb; pdb.set_trace()
+# import pdb; pdb.set_trace()
 
 from astropy.io import fits
 import galsim
@@ -120,10 +120,13 @@ if __name__ == '__main__':
     cube_real = fits.getdata('../../data/cube_real.fits')
     cube_noiseless = fits.getdata('../../data/cube_real_noiseless.fits')
 
-    basis = 'Compound_Polar'; N1 = 20; N2=20; solver = 'lasso'; n_max=55; 
-    Num_of_shapelets = 28; alpha = 0.01; snr = 50.;
-    selected_imgs = [0, 25, 51, 75, 94];
+    basis = 'Compound_XY'; N1 = 20; N2=20; solver = 'omp'; n_max=55; 
+    Num_of_shapelets = 28; alpha = 0.01; snr = 0;
+    selected_imgs = [51];#np.arange(100); selected_imgs = list(selected_imgs)
 
+    ## Flags for rotation and scaling
+
+    theta_flag = 0; scaling_flag = 0
 
     ## Background is the same for all images from the
     ## galsim example catalogue
@@ -147,8 +150,10 @@ if __name__ == '__main__':
         gal_noiseless = galsim.Image(img_noiseless.copy(), scale = 1.0)
         
         ## Add noise to make the image more realistic
-        gal_noiseless.addNoiseSNR(\
+        if snr!=0:
+        	gal_noiseless.addNoiseSNR(\
                 noise = galsim.GaussianNoise(), snr = snr, preserve_flux = True)
+        
         str_snr = str("%.1f" % (snr))
         img_noiseless = gal_noiseless.array
 
@@ -200,46 +205,47 @@ if __name__ == '__main__':
  
         size_X, size_Y = img_real.shape
 
-        ## Rotate the dictionary
-        theta_low= np.pi/3.; theta_high = 2*np.pi/3.; num = 3;
-        theta_arr = np.linspace(theta_low, theta_high, num=num)
-        theta_list = [0.] + list(theta_arr)
-        reconst_rotated_arr = []
-        reconst_rotated_arr.append(reconst_real)
-    
-        for theta in theta_arr:
-            print("Obtaining rotated dictionary by %f\n\n" % theta)
-            
-            image_data_real_rotated = np.asarray(image_data_real).copy(); 
-            image_data_real_rotated[3] = image_data_real_rotated[3] + theta 
-            
-            D_rotated_real, foo, coeffs_rotated_real, foo = \
-                    shapelet_decomposition(\
-                        image_data_real_rotated,\
-                        f_path = Path_noisy, \
-                        basis = basis, solver = solver,\
-                        image = img_real, \
-                        alpha_ = alpha, Num_of_shapelets = Num_of_shapelets,\
-                        N1=N1, N2=N2,\
-                        make_labels = True, test_basis=True,\
-                        plot_decomp = False, plot_sol = False,\
-                        n_max = n_max,\
-                        beta_array = beta_array_real)
+        if theta_flag:
+        	## Rotate the dictionary
+        	theta_low= np.pi/3.; theta_high = 2*np.pi/3.; num = 3;
+        	theta_arr = np.linspace(theta_low, theta_high, num=num)
+        	theta_list = [0.] + list(theta_arr)
+        	reconst_rotated_arr = []
+        	reconst_rotated_arr.append(reconst_real)
 
-            reconst_rotated_arr.append(np.dot(D_rotated_real, coeffs_real).reshape(size_X,size_Y)) 
-        
-        nrows = int(np.round((num+1)/2.))
-        ncols = nrows
-        mid_word = str("%d" % (np.count_nonzero(coeffs_real))) \
-                + '_' + basis
-        
-        mkdir_p(Path_theta_noisy)
-        _do_plotting(\
-                nrows,ncols,\
-                reconst_arr = reconst_rotated_arr,\
-                path = Path_theta_noisy \
-                + solver + '_' + mid_word +'_' + str_img_idx + '_.png',\
-                theta_list = theta_list)
+        	for theta in theta_arr:
+        		print("Obtaining rotated dictionary by %f\n\n" % theta)
+
+        		image_data_real_rotated = np.asarray(image_data_real).copy(); 
+        		image_data_real_rotated[3] = image_data_real_rotated[3] + theta 
+
+        		D_rotated_real, foo, coeffs_rotated_real, foo = \
+        		shapelet_decomposition(\
+        			image_data_real_rotated,\
+        			f_path = Path_noisy, \
+        			basis = basis, solver = solver,\
+        			image = img_real, \
+        			alpha_ = alpha, Num_of_shapelets = Num_of_shapelets,\
+        			N1=N1, N2=N2,\
+        			make_labels = True, test_basis=True,\
+        			plot_decomp = False, plot_sol = False,\
+        			n_max = n_max,\
+        			beta_array = beta_array_real)
+        		
+        		reconst_rotated_arr.append(np.dot(D_rotated_real, coeffs_real).reshape(size_X,size_Y)) 
+
+        	nrows = int(np.round((num+1)/2.))
+        	ncols = nrows
+        	mid_word = str("%d" % (np.count_nonzero(coeffs_real))) \
+        					+ '_' + basis
+
+        	mkdir_p(Path_theta_noisy)
+        	_do_plotting(\
+		    	nrows,ncols,\
+		    	reconst_arr = reconst_rotated_arr,\
+		    	path = Path_theta_noisy \
+		    	+ solver + '_' + mid_word +'_' + str_img_idx + '_.png',\
+		    	theta_list = theta_list)
 
         print("Getting the noiseless image %d data\n\n" % idx)
         
@@ -253,121 +259,124 @@ if __name__ == '__main__':
                     alpha_ = alpha, Num_of_shapelets = Num_of_shapelets,\
                     N1=N1, N2=N2,\
                     make_labels = True, test_basis=True,\
-                    plot_decomp = False, plot_sol = True,\
-                    flag_gaussian_fit = True,\
+                    plot_decomp = True, plot_sol = True,\
+                    flag_gaussian_fit = False,\
                     n_max = n_max,\
                     beta_array = beta_array_noiseless)
         
         ## Rotate the dictionary
         reconst_rotated_arr = []
         reconst_rotated_arr.append(reconst_noiseless)
-    
-        for theta in theta_arr:
-            print("Obtaining rotated dictionary by %f\n\n" % theta)
-            
-            image_data_real_rotated = np.asarray(image_data_noiseless).copy(); 
-            image_data_real_rotated[3] = image_data_real_rotated[3] + theta 
-            
-            D_rotated_noiseless, foo, coeffs_rotated_noiseless, foo = \
-                    shapelet_decomposition(\
-                        image_data_real_rotated,\
-                        f_path = Path_noiseless, \
-                        basis = basis, solver = solver,\
-                        image = img_noiseless, \
-                        alpha_ = alpha, Num_of_shapelets = Num_of_shapelets,\
-                        N1=N1, N2=N2,\
-                        make_labels = True, test_basis=True,\
-                        plot_decomp = False, plot_sol = False,\
-                        n_max = n_max,\
-                        beta_array = beta_array_real)
 
-            reconst_rotated_arr.append(\
-                    np.dot(D_rotated_noiseless, coeffs_noiseless).reshape(size_X,size_Y)) 
+        if theta_flag:
+
+        	for theta in theta_arr:
+        		print("Obtaining rotated dictionary by %f\n\n" % theta)
+
+        		image_data_real_rotated = np.asarray(image_data_noiseless).copy(); 
+        		image_data_real_rotated[3] = image_data_real_rotated[3] + theta 
+
+        		D_rotated_noiseless, foo, coeffs_rotated_noiseless, foo = \
+        		shapelet_decomposition(\
+        			image_data_real_rotated,\
+        			f_path = Path_noiseless, \
+        			basis = basis, solver = solver,\
+        			image = img_noiseless, \
+        			alpha_ = alpha, Num_of_shapelets = Num_of_shapelets,\
+        			N1=N1, N2=N2,\
+        			make_labels = True, test_basis=True,\
+        			plot_decomp = False, plot_sol = False,\
+        			n_max = n_max,\
+        			beta_array = beta_array_real)
+
+        		reconst_rotated_arr.append(\
+        			np.dot(D_rotated_noiseless, coeffs_noiseless).reshape(size_X,size_Y)) 
+
+        	nrows = int(np.round((num+1)/2.))
+        	ncols = nrows     
+        	mid_word_n = str("%d" % (np.count_nonzero(coeffs_noiseless))) \
+        					+ '_' + basis
+
+        	mkdir_p(Path_theta_noiseless)
+        	_do_plotting(\
+        		nrows,ncols,\
+        		reconst_arr = reconst_rotated_arr,\
+        		path = Path_theta_noiseless \
+        		+ solver + '_' + mid_word_n +'_' + str_img_idx + '_.png',\
+        		theta_list = theta_list)   
         
-        nrows = int(np.round((num+1)/2.))
-        ncols = nrows     
-        mid_word_n = str("%d" % (np.count_nonzero(coeffs_noiseless))) \
-                + '_' + basis
+        if scaling_flag:
+	        ## Scale the coefficients and show
+	        num = 5
+	        low = 0.5; high = 2;
+	        scales = np.linspace(low,high, num = num)
+	        scales_ = [1.] + list(scales)
+	        reconst_scaled_real = [reconst_real]
+	        beta_arr = np.asarray(beta_array_real)
 
-        mkdir_p(Path_theta_noiseless)
-        _do_plotting(\
-                nrows,ncols,\
-                reconst_arr = reconst_rotated_arr,\
-                path = Path_theta_noiseless \
-                + solver + '_' + mid_word_n +'_' + str_img_idx + '_.png',\
-                theta_list = theta_list)   
-        
-        ## Scale the coefficients and show
-        num = 5
-        low = 0.5; high = 2;
-        scales = np.linspace(low,high, num = num)
-        scales_ = [1.] + list(scales)
-        reconst_scaled_real = [reconst_real]
-        beta_arr = np.asarray(beta_array_real)
+	        for scale in scales:
+	            beta_arr_ = scale * beta_arr
+	            image_data_ = np.asarray(image_data_real).copy()
+	            if not('Compound' in basis):
+	                image_data_[2] = image_data_[2]*scale
 
-        for scale in scales:
-            beta_arr_ = scale * beta_arr
-            image_data_ = np.asarray(image_data_real).copy()
-            if not('Compound' in basis):
-                image_data_[2] = image_data_[2]*scale
+	            D_scaled_real, foo, coeffs_scaled_real, foo = \
+	                    shapelet_decomposition(\
+	                        image_data_,\
+	                        f_path = Path_noisy, \
+	                        basis = basis, solver = solver,\
+	                        image = img_real, \
+	                        alpha_ = alpha, Num_of_shapelets = Num_of_shapelets,\
+	                        N1=N1, N2=N2,\
+	                        make_labels = True, test_basis=True,\
+	                        plot_decomp = False, plot_sol = False,\
+	                        n_max = n_max,\
+	                        beta_array = beta_arr_)
+	            reconst_scaled_real.append(np.dot(D_scaled_real,coeffs_real).reshape(size_X,size_Y))
 
-            D_scaled_real, foo, coeffs_scaled_real, foo = \
-                    shapelet_decomposition(\
-                        image_data_,\
-                        f_path = Path_noisy, \
-                        basis = basis, solver = solver,\
-                        image = img_real, \
-                        alpha_ = alpha, Num_of_shapelets = Num_of_shapelets,\
-                        N1=N1, N2=N2,\
-                        make_labels = True, test_basis=True,\
-                        plot_decomp = False, plot_sol = False,\
-                        n_max = n_max,\
-                        beta_array = beta_arr_)
-            reconst_scaled_real.append(np.dot(D_scaled_real,coeffs_real).reshape(size_X,size_Y))
+	        nrows = 2        
+	        ncols = int(np.round((num+1)/2.))
 
-        nrows = 2        
-        ncols = int(np.round((num+1)/2.))
+	        mkdir_p(Path_scale_noisy)
 
-        mkdir_p(Path_scale_noisy)
+	        _do_plotting(\
+	                nrows,ncols,\
+	                reconst_arr = reconst_scaled_real,\
+	                path = Path_scale_noisy \
+	                + solver + '_'+mid_word+'_' + str_img_idx + '_.png',\
+	                scales = scales) 
+	       
+	        ## Noiseless
+	        reconst_scaled_noiseless = [reconst_noiseless]
+	        beta_arr_noiseless = np.asarray(beta_array_noiseless)
 
-        _do_plotting(\
-                nrows,ncols,\
-                reconst_arr = reconst_scaled_real,\
-                path = Path_scale_noisy \
-                + solver + '_'+mid_word+'_' + str_img_idx + '_.png',\
-                scales = scales) 
-       
-        ## Noiseless
-        reconst_scaled_noiseless = [reconst_noiseless]
-        beta_arr_noiseless = np.asarray(beta_array_noiseless)
-
-        for scale in scales:
-            beta_arr_ = scale * beta_arr_noiseless
-            image_data_ = np.asarray(image_data_noiseless).copy()
-            if not('Compound' in basis):
-                image_data_[2] = image_data_[2]*scale
-            D_scaled_noiseless, foo, coeffs_scaled_noiseless, foo = \
-                    shapelet_decomposition(\
-                        image_data_,\
-                        f_path = Path_noisy, \
-                        basis = basis, solver = solver,\
-                        image = img_noiseless, \
-                        alpha_ = alpha, Num_of_shapelets = Num_of_shapelets,\
-                        N1=N1, N2=N2,\
-                        make_labels = True, test_basis=True,\
-                        plot_decomp = False, plot_sol = False,\
-                        n_max = n_max,\
-                        beta_array = beta_arr_)
-            reconst_scaled_noiseless.append(\
-                    np.dot(D_scaled_noiseless,coeffs_noiseless).reshape(size_X,size_Y)) 
-        
-        nrows = 2
-        ncols = int(np.round((num+1)/2.))
-        
-        mkdir_p(Path_scale_noiseless)
-        _do_plotting(\
-                nrows,ncols,\
-                reconst_arr = reconst_scaled_noiseless,\
-                path = Path_scale_noiseless \
-                + solver + '_'+mid_word_n+'_' + str_img_idx + '_.png',\
-                scales = scales) 
+	        for scale in scales:
+	            beta_arr_ = scale * beta_arr_noiseless
+	            image_data_ = np.asarray(image_data_noiseless).copy()
+	            if not('Compound' in basis):
+	                image_data_[2] = image_data_[2]*scale
+	            D_scaled_noiseless, foo, coeffs_scaled_noiseless, foo = \
+	                    shapelet_decomposition(\
+	                        image_data_,\
+	                        f_path = Path_noisy, \
+	                        basis = basis, solver = solver,\
+	                        image = img_noiseless, \
+	                        alpha_ = alpha, Num_of_shapelets = Num_of_shapelets,\
+	                        N1=N1, N2=N2,\
+	                        make_labels = True, test_basis=True,\
+	                        plot_decomp = False, plot_sol = False,\
+	                        n_max = n_max,\
+	                        beta_array = beta_arr_)
+	            reconst_scaled_noiseless.append(\
+	                    np.dot(D_scaled_noiseless,coeffs_noiseless).reshape(size_X,size_Y)) 
+	        
+	        nrows = 2
+	        ncols = int(np.round((num+1)/2.))
+	        
+	        mkdir_p(Path_scale_noiseless)
+	        _do_plotting(\
+	                nrows,ncols,\
+	                reconst_arr = reconst_scaled_noiseless,\
+	                path = Path_scale_noiseless \
+	                + solver + '_'+mid_word_n+'_' + str_img_idx + '_.png',\
+	                scales = scales) 

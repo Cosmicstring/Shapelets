@@ -110,7 +110,7 @@ def show_some_shapelets(M=5,N=5, theta = 0., sigma=1., q=1., basis = 'Polar_Elli
 def shapelet_decomposition(image_data,\
         f_path = '/home/',\
         N1=20,N2=20, basis = 'XY', solver = 'omp', image = None, \
-        coeff_0 = None, noise_scale = None, \
+        coeff_0 = None, noise_scale = 0., \
         alpha_ = None, Num_of_shapelets = 28, \
         make_labels = False,  test_basis = False,\
         flag_gaussian_fit = True,\
@@ -185,12 +185,12 @@ def shapelet_decomposition(image_data,\
          
     ## Just for checking plot the chosen image
     if noise_scale == 0:
-        if (os.path.isfile('Plots/Initial_image_stability.png')):
+        if (os.path.isfile('Stability_Plots/Initial_image_stability.png')):
             pass
         else:
             from pylab import imshow
             imshow(image)
-            plt.savefig('Plots/Initial_image_stability.png')
+            plt.savefig('Stability_Plots/Initial_image_stability.png')
             plt.clf() 
             plt.close()
 

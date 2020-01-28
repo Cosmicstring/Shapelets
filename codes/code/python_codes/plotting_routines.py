@@ -5,7 +5,9 @@ import numpy as np
 
 from utils.I_O_utils import *
 from utils.shapelet_utils import *
+import matplotlib.cm as cm
 
+import os
 """
 ----------------------
 massey_refregier_2005 == Massey R., Refregier A., MNRAS 2005
@@ -26,7 +28,6 @@ def coeff_plot2d(coeffs,N1,N2,\
         orientation='vertical',\
         f_coef_output = ''):
     import matplotlib.pyplot as plt
-    import matplotlib.cm as cm
     from matplotlib.colors import LogNorm
     from mpl_toolkits.axes_grid1 import make_axes_locatable
 
@@ -68,9 +69,10 @@ def coeff_plot2d(coeffs,N1,N2,\
     else:
         coeffs_reshaped = coeffs
     
+    idx_nonzero = np.where(coeffs_reshaped != 0)
+
     ## Output to the file only nonzero values of coefs
     if f_coef_output != '':
-        idx_nonzero = np.where(coeffs_reshaped != 0)
         for n,m in zip(idx_nonzero[0], idx_nonzero[1]):
             f.write("%d\t%d\t%.3e\n" % (n,m,coeffs_reshaped[n,m]))
         f.close()
@@ -78,6 +80,15 @@ def coeff_plot2d(coeffs,N1,N2,\
     #coeffs_reshaped /= coeffs_reshaped.max()
     im = ax.imshow(coeffs_reshaped,cmap=cm.bwr, interpolation='none')
     
+    #set yticks and xticks
+
+    yticks_int = []; xticks_int = []
+    for n,m in zip(idx_nonzero[0], idx_nonzero[1]):
+        yticks_int.append(int(n)); xticks_int.append(int(m))
+
+    # ax.set_yticks = yticks_int
+    # ax.set_xticks = xticks_int
+
     ## Force colorbars besides the axes
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size='5%')    
@@ -98,7 +109,6 @@ def coeff_plot_polar(coeffs, N1,N2, \
     ax, fig     :   Axes and Figure objects with plotted coefficients
     """
     import matplotlib as mpl
-    import matplotlib.cm as cm
     from matplotlib.patches import Rectangle
     from mpl_toolkits.axes_grid1 import make_axes_locatable
 
@@ -120,13 +130,18 @@ def coeff_plot_polar(coeffs, N1,N2, \
         N_range = N1
     
     k = 0
+    yticks_int = []
+    xticks_int = []
     for n in range(N_range):
         for m in range(-n,n+1,2):
             x.append(n)
             y.append(m)
             color_vals.append(coeffs[k])
-            if (coeffs[k] != 0) and f_coef_output !='':
-                f.write("%d\t%d\t%.3e\n" % (n,m, coeffs[k]))
+            if (coeffs[k] != 0):
+                yticks_int.append(int(m))
+                xticks_int.append(int(n))
+                if f_coef_output !='':
+                    f.write("%d\t%d\t%.3e\n" % (n,m, coeffs[k]))
             k += 1
         ## Make appropriate y coord
         ## So that the squares don't overlap
@@ -156,8 +171,13 @@ def coeff_plot_polar(coeffs, N1,N2, \
     ax.set_ylabel('m')
     ax.set_xlabel('n')
     ax.set_aspect(aspect = 'auto', adjustable ='box')
-    ax.axis([min(x)-1., max(x)+1., min(y)-1., max(y)+1.])
-    ax.minorticks_on()
+    xmin, xmax, ymin, ymax = ax.axis([min(x)-1., max(x)+1., min(y)-1., max(y)+1.])
+    #ax.minorticks_on()
+
+    # Set the yticks and xticks to be integers
+
+    ax.set_yticks(list(yticks_int))
+    ax.set_xticks(list(xticks_int))
 
     ## Add the coeffs as squares
     ## without any white spaces remaining
@@ -250,13 +270,15 @@ def _get_gaussian_noise_params(arr,f_path, bins_num = None):
         ax.set_ylabel('PDF of pixel values')
         ax.set_xlabel('Pixel values')
         ax.legend(loc='best')
-        plt.savefig(f_path)
+        if not(os.path.exists(f_path)):
+            plt.savefig(f_path)
         plt.clf()
         plt.close()
 
         return p_fit[0], p_fit[1], p_err[0], p_err[1]
     else:
         return None, None, None, None
+
 def plot_decomposition(basis, image, size_X, size_Y, \
         base_coefs,N1,N2,shapelet_reconst_array, signal, residual_array,\
         residual_energy_fraction_array,recovered_energy_fraction_array, Path,\
@@ -321,9 +343,12 @@ def plot_decomposition(basis, image, size_X, size_Y, \
             vmin, vmax = min(shapelet_reconst.min(),signal.min()), \
                     max(shapelet_reconst.max(),signal.max())
 
-            im00 = ax[0,0].imshow(image,vmin=vmin,vmax=vmax)
-            im01 = ax[0,1].imshow(shapelet_reconst.reshape(size_X,size_Y),vmin=vmin,vmax=vmax)
-            im10 = ax[1,0].imshow(residual.reshape(size_X,size_Y))
+            im00 = ax[0,0].imshow(image,
+                                    vmin=vmin,vmax=vmax,cmap = cm.jet)
+            im01 = ax[0,1].imshow(shapelet_reconst.reshape(size_X,size_Y),
+                                    vmin=vmin,vmax=vmax, cmap = cm.jet)
+            im10 = ax[1,0].imshow(residual.reshape(size_X,size_Y),
+                                    cmap = cm.jet)
 
             # Force the colorbar to be the same size as the axes
             divider00 = make_axes_locatable(ax[0,0])
@@ -351,7 +376,10 @@ def plot_decomposition(basis, image, size_X, size_Y, \
             fig.suptitle('Shapelet Basis decomposition')
             
             fig.tight_layout()
-            plt.savefig(Path + '_' + str_beta + '_.png')
+            
+            if not(os.path.exists(Path + '_' + str_beta + '_.png')):
+                plt.savefig(Path + '_' + str_beta + '_.png')
+
             plt.clf()
             plt.close()
 
@@ -421,10 +449,12 @@ def plot_solution(basis, N1,N2,image_initial,size_X, size_Y,\
             vmin, vmax = min(reconst.min(),image_initial.min()), \
                     max(reconst.max(),image_initial.max())
             
-            im00 = ax2[0,0].imshow(image_initial, aspect = '1', vmin=vmin, vmax=vmax)
-            im01 = ax2[0,1].imshow(\
-                    reconst.reshape(size_X,size_Y), aspect = '1', vmin=vmin, vmax=vmax)
-            im10 = ax2[1,0].imshow(residual.reshape(size_X,size_Y), aspect = '1')
+            im00 = ax2[0,0].imshow(image_initial, 
+                                    aspect = '1', vmin=vmin, vmax=vmax, cmap = cm.jet)
+            im01 = ax2[0,1].imshow(reconst.reshape(size_X,size_Y), 
+                                    aspect = '1', vmin=vmin, vmax=vmax, cmap = cm.jet)
+            im10 = ax2[1,0].imshow(residual.reshape(size_X,size_Y), 
+                                    aspect = '1', cmap = cm.jet)
 
             if 'XY' in basis:
                 fig2, ax2[1,1] = coeff_plot2d(coefs,N1,N2,\
@@ -434,8 +464,7 @@ def plot_solution(basis, N1,N2,image_initial,size_X, size_Y,\
                 fig2, ax2[1,1] = coeff_plot_polar(coefs,N1,N2,\
                         ax=ax2[1,1],fig=fig2,\
                         f_coef_output = Path + '_' + str_beta + '_.txt')     
-
-            ax2[1,1].grid(lw=2)
+                ax2[1,1].grid(lw=2)
             
             # Force the colorbar to be the same size as the axes
             divider00 = make_axes_locatable(ax2[0,0])
@@ -447,8 +476,8 @@ def plot_solution(basis, N1,N2,image_initial,size_X, size_Y,\
             divider10 = make_axes_locatable(ax2[1,0])
             cax10 = divider10.append_axes("right", size="5%")  
             
-            fig2.colorbar(im00, format = '%.2e', cax=cax00);
-            fig2.colorbar(im01, format = '%.2e', cax=cax01); 
+            fig2.colorbar(im00, format = '%.2e', cax=cax00)
+            fig2.colorbar(im01, format = '%.2e', cax=cax01) 
             fig2.colorbar(im10, format = '%.2e', cax=cax10)
             ax2[0,0].set_title('Original image'); 
             ax2[0,1].set_title('Reconstructed image - Frac. of energy = '\
@@ -502,7 +531,8 @@ def plot_solution(basis, N1,N2,image_initial,size_X, size_Y,\
                         + 'beta - ' + str_beta)
             
             fig2.tight_layout()
-            plt.savefig(Path + '_' + str_beta + '_.png')
+            if not(os.path.exists(Path + '_' + str_beta + '_.png')):
+                plt.savefig(Path + '_' + str_beta + '_.png')
             plt.clf()
             plt.close()
 
@@ -520,15 +550,17 @@ def stability_plots(basis,solver,coefs,\
         elif 'Polar' in basis:
             fig,ax=coeff_plot_polar(coefs,N1,N2,ax=ax,fig=fig,\
                     f_coef_output = f_coef_output)
+            ax.grid(lw=2, which='both')
         
         if y_axis_scale != '':
             ax.set_yscale(y_axis_scale)
-        ax.grid(lw=2)
-        ax.set_aspect('equal')
+        
         ax.set_title(ax_title)
 
         fig.tight_layout()
-        plt.savefig(f_path_to_save + '_.png')
+        if not(os.path.exists(f_path_to_save + '_.png')):
+            plt.savefig(f_path_to_save + '_.png')
+
         return fig, ax
     else:
         print("All coefs zero for:\n")
@@ -652,6 +684,7 @@ def plot_stability(coeff_stability, coeff_0, N1, N2, noise_img_num, \
             else:
                 N_plot = n_nonzero
 
+            N_plot = int(N_plot)
             ## If you can get all of the nonzero if not
             ## then just N_plot values
             ## If N_plot > nonzero * it returns the whole set of indices

@@ -59,7 +59,7 @@ def get_gaussian_weight_image(img_array):
 
     ## Create the weight image, with same dimensions as the given Image
     weight = galsim.Image(bounds=img.bounds)
-    offset = galsim.PositionD(x0,y0)-weight.trueCenter()
+    offset = galsim.PositionD(x0,y0) - weight.true_center
     weight = gauss.drawImage(image=weight, offset=offset, scale=1., method='no_pixel')
 
     ## Return the weight image in the same format as the input
