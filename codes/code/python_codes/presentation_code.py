@@ -120,7 +120,7 @@ if __name__ == '__main__':
     cube_real = fits.getdata('../../data/cube_real.fits')
     cube_noiseless = fits.getdata('../../data/cube_real_noiseless.fits')
 
-    basis = 'Compound_XY'; N1 = 20; N2=20; solver = 'omp'; n_max=55; 
+    basis = 'Polar_Elliptical'; N1 = 20; N2=20; solver = 'omp'; n_max=55; 
     Num_of_shapelets = 28; alpha = 0.01; snr = 0;
     selected_imgs = [51];#np.arange(100); selected_imgs = list(selected_imgs)
 

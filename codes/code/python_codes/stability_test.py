@@ -179,7 +179,7 @@ def prep_and_do_noise_iter(image_data,\
         else:
             # Here we want to also check how sensitive the reconstruction is
             # when we also give in the wrong beta scales for the image!
-            beta_array = [1.881, 2.097, 2.531, 3.182, 4.918]
+            beta_array = [0.990, 1.980, 3.960]
     else:
         beta_array = np.asarray([sigma])
     

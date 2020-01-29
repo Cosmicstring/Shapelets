@@ -179,6 +179,11 @@ def coeff_plot_polar(coeffs, N1,N2, \
     ax.set_yticks(list(yticks_int))
     ax.set_xticks(list(xticks_int))
 
+    # Mark the position where there are non-zero valued coefficients
+
+    ax.plot(xticks_int, yticks_int, marker = 'x', color = 'black')
+
+
     ## Add the coeffs as squares
     ## without any white spaces remaining
     for x,y,c,h in zip(x,y,color_vals,dx):
